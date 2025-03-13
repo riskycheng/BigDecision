@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大决定 - 补充信息</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .create-header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .create-content {
+      padding: 20px;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 33%;
+    }
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--border-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .step-circle.active {
+      background-color: var(--primary-color);
+    }
+    .step-circle.completed {
+      background-color: var(--success-color);
+    }
+    .step-circle.completed::after {
+      content: "✓";
+    }
+    .step-label {
+      font-size: 12px;
+      color: var(--light-text-color);
+      text-align: center;
+    }
+    .step-label.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    .step-line {
+      height: 2px;
+      background-color: var(--border-color);
+      flex-grow: 1;
+      margin-top: 15px;
+    }
+    .step-line.completed {
+      background-color: var(--success-color);
+    }
+    .form-section {
+      margin-bottom: 24px;
+    }
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .form-hint {
+      font-size: 12px;
+      color: var(--light-text-color);
+      margin-bottom: 12px;
+    }
+    .bottom-actions {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+    }
+    .info-card {
+      background-color: #F3F4F6;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .info-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tag {
+      background-color: #E5E7EB;
+      color: #4B5563;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .tag.selected {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .tag i {
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <div class="status-bar-left">
+      <span class="status-bar-time">9:41</span>
+    </div>
+    <div class="status-bar-center">
+      <i class="fas fa-wifi"></i>
+    </div>
+    <div class="status-bar-right">
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+  
+  <div class="app-content">
+    <div class="create-header">
+      <button class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="page-title">补充信息</div>
+      <div style="width: 24px;"></div> <!-- 占位元素，保持标题居中 -->
+    </div>
+    
+    <div class="create-content">
+      <div class="step-indicator">
+        <div class="step">
+          <div class="step-circle completed"></div>
+          <div class="step-label">输入选项</div>
+        </div>
+        <div class="step-line completed"></div>
+        <div class="step">
+          <div class="step-circle active">2</div>
+          <div class="step-label active">补充信息</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-label">查看结果</div>
+        </div>
+      </div>
+      
+      <div class="info-card">
+        <div class="info-title">你的决定</div>
+        <div class="text-sm text-gray-600 mb-2">是否换工作？</div>
+        <div class="flex justify-between text-xs text-gray-500">
+          <div>选项A: 留在现公司</div>
+          <div>选项B: 接受新offer</div>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <label class="form-label">决定类型</label>
+        <div class="form-hint">选择你的决定类型，帮助AI更好地理解</div>
+        <div class="tag-container">
+          <div class="tag selected"><i class="fas fa-briefcase"></i>工作</div>
+          <div class="tag"><i class="fas fa-heart"></i>感情</div>
+          <div class="tag"><i class="fas fa-graduation-cap"></i>教育</div>
+          <div class="tag"><i class="fas fa-home"></i>住房</div>
+          <div class="tag"><i class="fas fa-plane"></i>旅行</div>
+          <div class="tag"><i class="fas fa-shopping-cart"></i>购物</div>
+          <div class="tag"><i class="fas fa-dollar-sign"></i>投资</div>
+          <div class="tag"><i class="fas fa-ellipsis-h"></i>其他</div>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <label class="form-label">补充信息</label>
+        <div class="form-hint">提供更多背景信息，帮助AI更准确地分析</div>
+        <textarea class="textarea-field" placeholder="例如：我在现公司工作了3年，薪资稳定但晋升空间有限。新公司提供的薪资高30%，但工作强度可能更大，且需要搬家..."></textarea>
+      </div>
+      
+      <div class="form-section">
+        <label class="form-label">决定重要性</label>
+        <div class="form-hint">这个决定对你有多重要？</div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">不太重要</span>
+          <input type="range" min="1" max="5" value="4" class="w-1/2">
+          <span class="text-sm text-gray-500">非常重要</span>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <label class="form-label">决定时间框架</label>
+        <div class="form-hint">你需要在多长时间内做出决定？</div>
+        <select class="input-field">
+          <option>立即</option>
+          <option selected>几天内</option>
+          <option>一周内</option>
+          <option>一个月内</option>
+          <option>长期考虑</option>
+        </select>
+      </div>
+      
+      <!-- 底部操作栏 -->
+      <div style="height: 80px;"></div> <!-- 占位元素，防止内容被底部操作栏遮挡 -->
+    </div>
+    
+    <div class="bottom-actions">
+      <button class="btn-secondary">上一步</button>
+      <button class="btn-primary">分析决定</button>
+    </div>
+  </div>
+  
+  <script src="../js/app.js"></script>
+</body>
+</html> 

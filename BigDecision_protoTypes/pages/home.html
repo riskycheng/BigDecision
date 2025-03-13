@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大决定 - 首页</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .home-header {
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+      color: white;
+      padding: 30px 20px;
+      border-radius: 0 0 20px 20px;
+    }
+    .home-greeting {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .home-subtitle {
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+    .create-btn {
+      background-color: white;
+      color: #4F46E5;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .home-content {
+      padding: 20px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .view-all {
+      color: var(--primary-color);
+      font-size: 14px;
+    }
+    .recent-decisions {
+      margin-bottom: 30px;
+    }
+    .decision-card {
+      background-color: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .decision-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .decision-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--light-text-color);
+    }
+    .decision-date {
+      font-size: 12px;
+      color: var(--light-text-color);
+    }
+    .decision-result {
+      background-color: #EEF2FF;
+      color: var(--primary-color);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .action-card {
+      background-color: white;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .action-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+    }
+    .action-title {
+      font-weight: 600;
+      text-align: center;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <div class="status-bar-left">
+      <span class="status-bar-time">9:41</span>
+    </div>
+    <div class="status-bar-center">
+      <i class="fas fa-wifi"></i>
+    </div>
+    <div class="status-bar-right">
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+  
+  <div class="app-content">
+    <div class="home-header">
+      <div class="home-greeting">你好，用户</div>
+      <div class="home-subtitle">需要帮你做决定吗？</div>
+      <button class="create-btn">
+        <i class="fas fa-plus"></i>
+        <span>创建新决定</span>
+      </button>
+    </div>
+    
+    <div class="home-content">
+      <div class="recent-decisions">
+        <div class="section-title">
+          <span>最近的决定</span>
+          <a href="#" class="view-all">查看全部</a>
+        </div>
+        
+        <div class="decision-card">
+          <div class="decision-title">是否换工作？</div>
+          <div class="decision-options">
+            <div>留在现公司</div>
+            <div>vs</div>
+            <div>接受新offer</div>
+          </div>
+          <div class="flex justify-between items-center">
+            <div class="decision-date">2023年6月15日</div>
+            <div class="decision-result">推荐：接受新offer</div>
+          </div>
+        </div>
+        
+        <div class="decision-card">
+          <div class="decision-title">周末去哪里旅行？</div>
+          <div class="decision-options">
+            <div>海边</div>
+            <div>vs</div>
+            <div>山区</div>
+          </div>
+          <div class="flex justify-between items-center">
+            <div class="decision-date">2023年6月10日</div>
+            <div class="decision-result">推荐：海边</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="quick-actions">
+        <div class="action-card">
+          <div class="action-icon"><i class="fas fa-random"></i></div>
+          <div class="action-title">随机决定</div>
+        </div>
+        <div class="action-card">
+          <div class="action-icon"><i class="fas fa-star"></i></div>
+          <div class="action-title">收藏的决定</div>
+        </div>
+        <div class="action-card">
+          <div class="action-icon"><i class="fas fa-share-alt"></i></div>
+          <div class="action-title">分享决定</div>
+        </div>
+        <div class="action-card">
+          <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
+          <div class="action-title">决定统计</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-bar">
+    <div class="tab-item active">
+      <div class="tab-icon"><i class="fas fa-home"></i></div>
+      <div>首页</div>
+    </div>
+    <div class="tab-item">
+      <div class="tab-icon"><i class="fas fa-history"></i></div>
+      <div>历史</div>
+    </div>
+    <div class="tab-item">
+      <div class="tab-icon"><i class="fas fa-plus-circle"></i></div>
+      <div>新决定</div>
+    </div>
+    <div class="tab-item">
+      <div class="tab-icon"><i class="fas fa-cog"></i></div>
+      <div>设置</div>
+    </div>
+  </div>
+  
+  <script src="../js/app.js"></script>
+</body>
+</html> 

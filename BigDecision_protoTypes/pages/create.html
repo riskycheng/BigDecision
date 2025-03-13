@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大决定 - 创建决定</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .create-header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .create-content {
+      padding: 20px;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 33%;
+    }
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--border-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .step-circle.active {
+      background-color: var(--primary-color);
+    }
+    .step-label {
+      font-size: 12px;
+      color: var(--light-text-color);
+      text-align: center;
+    }
+    .step-label.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    .step-line {
+      height: 2px;
+      background-color: var(--border-color);
+      flex-grow: 1;
+      margin-top: 15px;
+    }
+    .form-section {
+      margin-bottom: 24px;
+    }
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .form-hint {
+      font-size: 12px;
+      color: var(--light-text-color);
+      margin-bottom: 12px;
+    }
+    .vs-divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      color: var(--light-text-color);
+    }
+    .vs-divider::before, .vs-divider::after {
+      content: "";
+      flex-grow: 1;
+      height: 1px;
+      background-color: var(--border-color);
+    }
+    .vs-divider span {
+      padding: 0 10px;
+      font-weight: 600;
+    }
+    .bottom-actions {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <div class="status-bar-left">
+      <span class="status-bar-time">9:41</span>
+    </div>
+    <div class="status-bar-center">
+      <i class="fas fa-wifi"></i>
+    </div>
+    <div class="status-bar-right">
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+  
+  <div class="app-content">
+    <div class="create-header">
+      <button class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="page-title">创建新决定</div>
+      <div style="width: 24px;"></div> <!-- 占位元素，保持标题居中 -->
+    </div>
+    
+    <div class="create-content">
+      <div class="step-indicator">
+        <div class="step">
+          <div class="step-circle active">1</div>
+          <div class="step-label active">输入选项</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-circle">2</div>
+          <div class="step-label">补充信息</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-label">查看结果</div>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <label class="form-label">决定标题</label>
+        <input type="text" class="input-field" placeholder="例如：是否换工作？">
+      </div>
+      
+      <div class="form-section">
+        <label class="form-label">选项 A</label>
+        <div class="form-hint">详细描述你的第一个选择</div>
+        <input type="text" class="input-field" placeholder="选项A的标题">
+        <textarea class="textarea-field" placeholder="详细描述选项A（可选）"></textarea>
+      </div>
+      
+      <div class="vs-divider">
+        <span>VS</span>
+      </div>
+      
+      <div class="form-section">
+        <label class="form-label">选项 B</label>
+        <div class="form-hint">详细描述你的第二个选择</div>
+        <input type="text" class="input-field" placeholder="选项B的标题">
+        <textarea class="textarea-field" placeholder="详细描述选项B（可选）"></textarea>
+      </div>
+      
+      <!-- 底部操作栏 -->
+      <div style="height: 80px;"></div> <!-- 占位元素，防止内容被底部操作栏遮挡 -->
+    </div>
+    
+    <div class="bottom-actions">
+      <button class="btn-secondary">取消</button>
+      <button class="btn-primary">下一步</button>
+    </div>
+  </div>
+  
+  <script src="../js/app.js"></script>
+</body>
+</html> 

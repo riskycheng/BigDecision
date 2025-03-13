@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大决定 - 分析结果</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .create-header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .create-content {
+      padding: 20px;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 33%;
+    }
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--border-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .step-circle.active {
+      background-color: var(--primary-color);
+    }
+    .step-circle.completed {
+      background-color: var(--success-color);
+    }
+    .step-circle.completed::after {
+      content: "✓";
+    }
+    .step-label {
+      font-size: 12px;
+      color: var(--light-text-color);
+      text-align: center;
+    }
+    .step-label.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    .step-line {
+      height: 2px;
+      background-color: var(--border-color);
+      flex-grow: 1;
+      margin-top: 15px;
+    }
+    .step-line.completed {
+      background-color: var(--success-color);
+    }
+    .result-card {
+      background-color: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .recommendation {
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .recommendation-title {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 10px;
+    }
+    .recommendation-result {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .recommendation-confidence {
+      font-size: 14px;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .confidence-bar {
+      width: 100px;
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .confidence-level {
+      height: 100%;
+      width: 75%;
+      background-color: white;
+    }
+    .analysis-section {
+      margin-bottom: 20px;
+    }
+    .analysis-title {
+      font-weight: bold;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .option-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .pros-cons-list {
+      margin-bottom: 16px;
+    }
+    .list-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .list-icon {
+      margin-right: 8px;
+      margin-top: 2px;
+    }
+    .pros .list-icon {
+      color: var(--success-color);
+    }
+    .cons .list-icon {
+      color: var(--error-color);
+    }
+    .reasoning {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-color);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .action-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      border-radius: 12px;
+      background-color: #F3F4F6;
+      color: var(--text-color);
+    }
+    .action-icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .action-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <div class="status-bar-left">
+      <span class="status-bar-time">9:41</span>
+    </div>
+    <div class="status-bar-center">
+      <i class="fas fa-wifi"></i>
+    </div>
+    <div class="status-bar-right">
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+  
+  <div class="app-content">
+    <div class="create-header">
+      <button class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="page-title">分析结果</div>
+      <div style="width: 24px;"></div> <!-- 占位元素，保持标题居中 -->
+    </div>
+    
+    <div class="create-content">
+      <div class="step-indicator">
+        <div class="step">
+          <div class="step-circle completed"></div>
+          <div class="step-label">输入选项</div>
+        </div>
+        <div class="step-line completed"></div>
+        <div class="step">
+          <div class="step-circle completed"></div>
+          <div class="step-label">补充信息</div>
+        </div>
+        <div class="step-line completed"></div>
+        <div class="step">
+          <div class="step-circle active">3</div>
+          <div class="step-label active">查看结果</div>
+        </div>
+      </div>
+      
+      <div class="recommendation">
+        <div class="recommendation-title">AI推荐你选择</div>
+        <div class="recommendation-result">接受新offer</div>
+        <div class="recommendation-confidence">
+          <span>推荐置信度</span>
+          <div class="confidence-bar">
+            <div class="confidence-level"></div>
+          </div>
+          <span>75%</span>
+        </div>
+      </div>
+      
+      <div class="result-card">
+        <div class="analysis-section">
+          <div class="analysis-title">
+            <i class="fas fa-balance-scale text-indigo-600"></i>
+            <span>选项对比分析</span>
+          </div>
+          
+          <div class="option-title">选项A: 留在现公司</div>
+          <div class="pros-cons-list">
+            <div class="pros">
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-plus-circle"></i></div>
+                <div>工作环境熟悉，无需适应新环境</div>
+              </div>
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-plus-circle"></i></div>
+                <div>工作稳定，风险较低</div>
+              </div>
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-plus-circle"></i></div>
+                <div>已建立良好的人际关系网络</div>
+              </div>
+            </div>
+            <div class="cons">
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-minus-circle"></i></div>
+                <div>晋升空间有限</div>
+              </div>
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-minus-circle"></i></div>
+                <div>薪资增长缓慢</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="option-title">选项B: 接受新offer</div>
+          <div class="pros-cons-list">
+            <div class="pros">
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-plus-circle"></i></div>
+                <div>薪资提升30%，经济压力减轻</div>
+              </div>
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-plus-circle"></i></div>
+                <div>新的职业发展机会</div>
+              </div>
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-plus-circle"></i></div>
+                <div>可以学习新技能，拓展职业视野</div>
+              </div>
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-plus-circle"></i></div>
+                <div>公司发展前景更好</div>
+              </div>
+            </div>
+            <div class="cons">
+              <div class="list-item">
+                <div class="list-icon"><i class="fas fa-minus-circle"></i></div>
+                <div>工作强度可能增加</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="analysis-section">
+          <div class="analysis-title">
+            <i class="fas fa-brain text-indigo-600"></i>
+            <span>AI分析推理</span>
+          </div>
+          <div class="reasoning">
+            基于您提供的信息，选项B（接受新offer）似乎更符合您的需求。虽然留在现公司有稳定性和熟悉环境的优势，但新offer提供的30%薪资增长和更好的职业发展机会是非常有吸引力的。
+            <br><br>
+            考虑到您提到的晋升空间有限的问题，新公司可能提供更好的长期发展前景。虽然工作强度可能增加，但这也可能带来更多的学习和成长机会。
+            <br><br>
+            总体而言，接受新offer的优势明显大于留在现公司，尤其是从长期职业发展的角度来看。
+          </div>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <div class="action-btn">
+          <div class="action-icon"><i class="fas fa-save"></i></div>
+          <div class="action-label">保存结果</div>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon"><i class="fas fa-share-alt"></i></div>
+          <div class="action-label">分享</div>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon"><i class="fas fa-redo"></i></div>
+          <div class="action-label">重新分析</div>
+        </div>
+        <div class="action-btn">
+          <div class="action-icon"><i class="fas fa-home"></i></div>
+          <div class="action-label">返回首页</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../js/app.js"></script>
+</body>
+</html> 

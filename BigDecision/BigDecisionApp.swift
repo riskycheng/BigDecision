@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct BigDecisionApp: App {
+    @StateObject private var decisionStore = DecisionStore()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(decisionStore)
         }
     }
 }

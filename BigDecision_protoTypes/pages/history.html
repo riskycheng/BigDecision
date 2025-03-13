@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大决定 - 历史记录</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .history-header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .history-content {
+      padding: 20px;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+    .filter-chip {
+      background-color: #F3F4F6;
+      color: var(--text-color);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .filter-chip.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .history-list {
+      margin-bottom: 20px;
+    }
+    .history-card {
+      background-color: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .history-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .history-date {
+      font-size: 12px;
+      color: var(--light-text-color);
+    }
+    .history-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--light-text-color);
+    }
+    .history-result {
+      background-color: #EEF2FF;
+      color: var(--primary-color);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .history-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    .history-action {
+      color: var(--light-text-color);
+      font-size: 16px;
+    }
+    .history-action:hover {
+      color: var(--primary-color);
+    }
+    .history-tag {
+      background-color: #F3F4F6;
+      color: var(--light-text-color);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+    .empty-history {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .empty-icon {
+      font-size: 60px;
+      color: #E5E7EB;
+      margin-bottom: 20px;
+    }
+    .empty-text {
+      color: var(--light-text-color);
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <div class="status-bar-left">
+      <span class="status-bar-time">9:41</span>
+    </div>
+    <div class="status-bar-center">
+      <i class="fas fa-wifi"></i>
+    </div>
+    <div class="status-bar-right">
+      <i class="fas fa-battery-full"></i>
+    </div>
+  </div>
+  
+  <div class="app-content">
+    <div class="history-header">
+      <div class="page-title">历史记录</div>
+      <button>
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    
+    <div class="history-content">
+      <div class="filter-bar">
+        <div class="filter-chip active">全部</div>
+        <div class="filter-chip">工作</div>
+        <div class="filter-chip">感情</div>
+        <div class="filter-chip">教育</div>
+        <div class="filter-chip">住房</div>
+        <div class="filter-chip">旅行</div>
+        <div class="filter-chip">购物</div>
+        <div class="filter-chip">投资</div>
+      </div>
+      
+      <div class="history-list">
+        <div class="history-card">
+          <div class="history-title">
+            <div>是否换工作？</div>
+            <div class="history-date">2023年6月15日</div>
+          </div>
+          <div class="history-options">
+            <div>留在现公司</div>
+            <div>vs</div>
+            <div>接受新offer</div>
+          </div>
+          <div class="flex items-center">
+            <span class="history-tag"><i class="fas fa-briefcase mr-1"></i>工作</span>
+            <div class="history-result">推荐：接受新offer</div>
+          </div>
+          <div class="history-actions">
+            <div class="history-action"><i class="fas fa-share-alt"></i></div>
+            <div class="history-action"><i class="fas fa-star"></i></div>
+            <div class="history-action"><i class="fas fa-trash"></i></div>
+          </div>
+        </div>
+        
+        <div class="history-card">
+          <div class="history-title">
+            <div>周末去哪里旅行？</div>
+            <div class="history-date">2023年6月10日</div>
+          </div>
+          <div class="history-options">
+            <div>海边</div>
+            <div>vs</div>
+            <div>山区</div>
+          </div>
+          <div class="flex items-center">
+            <span class="history-tag"><i class="fas fa-plane mr-1"></i>旅行</span>
+            <div class="history-result">推荐：海边</div>
+          </div>
+          <div class="history-actions">
+            <div class="history-action"><i class="fas fa-share-alt"></i></div>
+            <div class="history-action"><i class="fas fa-star"></i></div>
+            <div class="history-action"><i class="fas fa-trash"></i></div>
+          </div>
+        </div>
+        
+        <div class="history-card">
+          <div class="history-title">
+            <div>是否购买新手机？</div>
+            <div class="history-date">2023年6月5日</div>
+          </div>
+          <div class="history-options">
+            <div>继续使用旧手机</div>
+            <div>vs</div>
+            <div>购买新款iPhone</div>
+          </div>
+          <div class="flex items-center">
+            <span class="history-tag"><i class="fas fa-shopping-cart mr-1"></i>购物</span>
+            <div class="history-result">推荐：继续使用旧手机</div>
+          </div>
+          <div class="history-actions">
+            <div class="history-action"><i class="fas fa-share-alt"></i></div>
+            <div class="history-action"><i class="fas fa-star"></i></div>
+            <div class="history-action"><i class="fas fa-trash"></i></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 空历史记录状态 (默认隐藏) -->
+      <div class="empty-history" style="display: none;">
+        <div class="empty-icon">
+          <i class="fas fa-history"></i>
+        </div>
+        <div class="empty-text">你还没有任何决定记录</div>
+        <button class="btn-primary">创建第一个决定</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-bar">
+    <div class="tab-item">
+      <div class="tab-icon"><i class="fas fa-home"></i></div>
+      <div>首页</div>
+    </div>
+    <div class="tab-item active">
+      <div class="tab-icon"><i class="fas fa-history"></i></div>
+      <div>历史</div>
+    </div>
+    <div class="tab-item">
+      <div class="tab-icon"><i class="fas fa-plus-circle"></i></div>
+      <div>新决定</div>
+    </div>
+    <div class="tab-item">
+      <div class="tab-icon"><i class="fas fa-cog"></i></div>
+      <div>设置</div>
+    </div>
+  </div>
+  
+  <script src="../js/app.js"></script>
+</body>
+</html> 

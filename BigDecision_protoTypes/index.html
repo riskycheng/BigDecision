@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大决定 - 原型展示</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      background-color: #f0f2f5;
+      padding: 20px;
+    }
+    .prototype-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+    .prototype-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .prototype-label {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto">
+    <header class="text-center py-8">
+      <h1 class="text-4xl font-bold text-indigo-600 mb-2">大决定</h1>
+      <p class="text-xl text-gray-600">高保真原型展示</p>
+    </header>
+    
+    <div class="prototype-container">
+      <!-- 欢迎页 -->
+      <div class="prototype-item">
+        <div class="iphone-frame">
+          <iframe src="pages/welcome.html" frameborder="0" width="100%" height="100%"></iframe>
+        </div>
+        <div class="prototype-label">欢迎页</div>
+      </div>
+      
+      <!-- 主页 -->
+      <div class="prototype-item">
+        <div class="iphone-frame">
+          <iframe src="pages/home.html" frameborder="0" width="100%" height="100%"></iframe>
+        </div>
+        <div class="prototype-label">主页</div>
+      </div>
+      
+      <!-- 创建决定页 -->
+      <div class="prototype-item">
+        <div class="iphone-frame">
+          <iframe src="pages/create.html" frameborder="0" width="100%" height="100%"></iframe>
+        </div>
+        <div class="prototype-label">创建决定</div>
+      </div>
+      
+      <!-- 补充信息页 -->
+      <div class="prototype-item">
+        <div class="iphone-frame">
+          <iframe src="pages/additional_info.html" frameborder="0" width="100%" height="100%"></iframe>
+        </div>
+        <div class="prototype-label">补充信息</div>
+      </div>
+      
+      <!-- 分析结果页 -->
+      <div class="prototype-item">
+        <div class="iphone-frame">
+          <iframe src="pages/result.html" frameborder="0" width="100%" height="100%"></iframe>
+        </div>
+        <div class="prototype-label">分析结果</div>
+      </div>
+      
+      <!-- 历史记录页 -->
+      <div class="prototype-item">
+        <div class="iphone-frame">
+          <iframe src="pages/history.html" frameborder="0" width="100%" height="100%"></iframe>
+        </div>
+        <div class="prototype-label">历史记录</div>
+      </div>
+      
+      <!-- 设置页 -->
+      <div class="prototype-item">
+        <div class="iphone-frame">
+          <iframe src="pages/settings.html" frameborder="0" width="100%" height="100%"></iframe>
+        </div>
+        <div class="prototype-label">设置</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 
