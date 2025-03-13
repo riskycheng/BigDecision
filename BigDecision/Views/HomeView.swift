@@ -4,6 +4,10 @@ import UIKit
 struct HomeView: View {
     @EnvironmentObject var decisionStore: DecisionStore
     @State private var showingCreateView = false
+    @State private var showingRandomDecisionView = false
+    @State private var showingFavoritesView = false
+    @State private var showingShareSheet = false
+    @State private var showingStatsView = false
     
     var body: some View {
         NavigationView {
@@ -88,10 +92,18 @@ struct HomeView: View {
                             .padding(.bottom, 10)
                         
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
-                            ActionCard(icon: "shuffle", title: "随机决定")
-                            ActionCard(icon: "star.fill", title: "收藏的决定")
-                            ActionCard(icon: "square.and.arrow.up", title: "分享决定")
-                            ActionCard(icon: "chart.bar.fill", title: "决定统计")
+                            ActionCard(icon: "shuffle", title: "随机决定", action: {
+                                randomDecision()
+                            })
+                            ActionCard(icon: "star.fill", title: "收藏的决定", action: {
+                                showingFavoritesView = true
+                            })
+                            ActionCard(icon: "square.and.arrow.up", title: "分享决定", action: {
+                                shareApp()
+                            })
+                            ActionCard(icon: "chart.bar.fill", title: "决定统计", action: {
+                                showingStatsView = true
+                            })
                         }
                     }
                     .padding()
@@ -101,6 +113,49 @@ struct HomeView: View {
             .sheet(isPresented: $showingCreateView) {
                 CreateDecisionView()
             }
+            .sheet(isPresented: $showingRandomDecisionView) {
+                // 随机决定视图
+                if let randomDecision = decisionStore.decisions.randomElement() {
+                    ResultView(decision: randomDecision)
+                } else {
+                    Text("没有找到决定")
+                        .font(.headline)
+                        .padding()
+                }
+            }
+            .sheet(isPresented: $showingFavoritesView) {
+                // 收藏的决定视图
+                Text("收藏功能即将上线")
+                    .font(.headline)
+                    .padding()
+            }
+            .sheet(isPresented: $showingStatsView) {
+                // 决定统计视图
+                Text("统计功能即将上线")
+                    .font(.headline)
+                    .padding()
+            }
+        }
+    }
+    
+    private func randomDecision() {
+        if decisionStore.decisions.isEmpty {
+            // 如果没有决定，显示创建新决定视图
+            showingCreateView = true
+        } else {
+            // 随机选择一个决定
+            showingRandomDecisionView = true
+        }
+    }
+    
+    private func shareApp() {
+        // 分享应用
+        let items = ["我正在使用「大决定」App帮助我做决策，推荐你也试试！"]
+        let ac = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first?.rootViewController {
+            rootViewController.present(ac, animated: true)
         }
     }
 }
@@ -165,22 +220,26 @@ struct DecisionCard: View {
 struct ActionCard: View {
     let icon: String
     let title: String
+    let action: () -> Void
     
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 28))
-                .foregroundColor(Color("AppPrimary"))
-            
-            Text(title)
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
+        Button(action: action) {
+            VStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 28))
+                    .foregroundColor(Color("AppPrimary"))
+                
+                Text(title)
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color(UIColor.systemBackground))
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.05), radius: 5)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
