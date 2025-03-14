@@ -118,6 +118,10 @@ struct ResultView: View {
                             onExport?()
                         }
                     }
+                    
+                    // 添加底部间距，避免与底部标签栏重叠
+                    Spacer()
+                        .frame(height: 100)
                 } else {
                     // 加载中状态
                     VStack(spacing: 20) {

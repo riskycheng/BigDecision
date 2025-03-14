@@ -1,12 +1,29 @@
 import SwiftUI
 import UIKit
 
+// 决策过滤器枚举
+enum DecisionFilter: String, CaseIterable {
+    case all = "全部"
+    case work = "工作"
+    case relationship = "感情"
+    case education = "教育"
+    case housing = "住房"
+    case travel = "旅行"
+    case shopping = "购物"
+    case investment = "投资"
+    case other = "其他"
+    
+    var title: String {
+        return self.rawValue
+    }
+}
+
 struct HistoryView: View {
     @EnvironmentObject var decisionStore: DecisionStore
     @State private var searchText = ""
     @State private var showingFilterOptions = false
-    @State private var selectedType: Decision.DecisionType?
     @State private var showingResetAlert = false
+    @State private var selectedFilter: DecisionFilter = .all
     
     var filteredDecisions: [Decision] {
         var decisions = decisionStore.decisions
@@ -20,9 +37,30 @@ struct HistoryView: View {
             }
         }
         
-        // 按类型过滤
-        if let type = selectedType {
-            decisions = decisions.filter { $0.decisionType == type }
+        // 按过滤器过滤
+        if selectedFilter != .all {
+            decisions = decisions.filter { decision in
+                switch selectedFilter {
+                case .work:
+                    return decision.decisionType == .work
+                case .relationship:
+                    return decision.decisionType == .relationship
+                case .education:
+                    return decision.decisionType == .education
+                case .housing:
+                    return decision.decisionType == .housing
+                case .travel:
+                    return decision.decisionType == .travel
+                case .shopping:
+                    return decision.decisionType == .shopping
+                case .investment:
+                    return decision.decisionType == .investment
+                case .other:
+                    return decision.decisionType == .other
+                default:
+                    return true
+                }
+            }
         }
         
         // 按时间排序（最新的在前面）
@@ -33,85 +71,47 @@ struct HistoryView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // 搜索栏
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    
-                    TextField("搜索决定", text: $searchText)
-                    
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    Button(action: {
-                        showingFilterOptions.toggle()
-                    }) {
-                        Image(systemName: "line.3.horizontal.decrease.circle\(selectedType != nil ? ".fill" : "")")
-                            .foregroundColor(selectedType != nil ? Color("AppPrimary") : .secondary)
-                    }
-                }
-                .padding()
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(10)
-                .padding(.horizontal)
-                .padding(.top)
+                SearchBar(text: $searchText, placeholder: "搜索决策...")
+                    .padding(.horizontal)
+                    .padding(.top, 10)
                 
-                // 过滤选项
-                if showingFilterOptions {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            FilterButton(title: "全部", isSelected: selectedType == nil) {
-                                selectedType = nil
-                            }
-                            
-                            ForEach(Decision.DecisionType.allCases, id: \.self) { type in
-                                FilterButton(
-                                    title: type.rawValue,
-                                    icon: type.icon,
-                                    isSelected: selectedType == type
-                                ) {
-                                    selectedType = type
+                // 过滤器
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(DecisionFilter.allCases, id: \.self) { filter in
+                            FilterButton(
+                                title: filter.title,
+                                isSelected: selectedFilter == filter,
+                                action: {
+                                    selectedFilter = filter
                                 }
-                            }
+                            )
                         }
-                        .padding(.horizontal)
                     }
+                    .padding(.horizontal)
                     .padding(.vertical, 10)
                 }
                 
                 // 决策列表
-                if filteredDecisions.isEmpty {
-                    EmptyStateView(
-                        icon: "clock",
-                        message: searchText.isEmpty && selectedType == nil ?
-                            "你还没有做过任何决定" : "没有找到匹配的决定",
-                        buttonText: "创建新决定",
-                        action: {}
-                    )
-                } else {
-                    List {
-                        ForEach(filteredDecisions) { decision in
-                            NavigationLink(destination: ResultView(decision: decision)) {
-                                HistoryItemRow(decision: decision)
-                            }
-                            .swipeActions {
-                                Button(role: .destructive) {
-                                    decisionStore.deleteDecision(decision)
-                                } label: {
-                                    Label("删除", systemImage: "trash")
-                                }
-                            }
+                List {
+                    ForEach(filteredDecisions) { decision in
+                        NavigationLink(destination: 
+                            ResultView(decision: decision)
+                                .navigationBarTitleDisplayMode(.inline)
+                        ) {
+                            HistoryItemRow(decision: decision)
                         }
+                        .listRowInsets(EdgeInsets(top: 5, leading: 15, bottom: 5, trailing: 15))
                     }
-                    .listStyle(PlainListStyle())
+                    .onDelete(perform: deleteDecision)
                 }
+                .listStyle(PlainListStyle())
             }
-            .navigationTitle("历史决定")
+            .navigationTitle("决策历史")
+            .navigationBarItems(
+                trailing: EditButton()
+                    .foregroundColor(Color("AppPrimary"))
+            )
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -133,6 +133,13 @@ struct HistoryView: View {
                     secondaryButton: .cancel()
                 )
             }
+        }
+    }
+    
+    private func deleteDecision(at offsets: IndexSet) {
+        if let index = offsets.first {
+            let decision = filteredDecisions[index]
+            decisionStore.deleteDecision(decision)
         }
     }
 }

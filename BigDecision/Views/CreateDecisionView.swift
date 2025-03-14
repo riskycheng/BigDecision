@@ -59,7 +59,7 @@ struct CreateDecisionView: View {
                 .shadow(color: Color.black.opacity(0.05), radius: 5)
                 
                 // 步骤指示器
-                StepIndicator(currentStep: currentStep, hasResult: decision != nil)
+                StepIndicator(currentStep: currentStep, hasResult: decision != nil, isAnalyzing: isAnalyzing)
                     .padding(.vertical)
                 
                 ScrollView {
@@ -152,8 +152,23 @@ struct CreateDecisionView: View {
                                     }
                                     .environmentObject(decisionStore)
                             } else {
-                                ProgressView("正在分析中...")
-                                    .padding()
+                                VStack(spacing: 20) {
+                                    ProgressView()
+                                        .scaleEffect(1.5)
+                                        .padding(.bottom, 10)
+                                    
+                                    Text("正在分析中...")
+                                        .font(.headline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("AI正在分析您的决策，这可能需要几秒钟时间")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 50)
                             }
                         default:
                             EmptyView()
@@ -442,6 +457,7 @@ struct CreateDecisionView: View {
     
     private func analyzeDecision() {
         isAnalyzing = true
+        currentStep = 3  // 立即更新到第3步
         
         let newDecision = Decision(
             title: title,
@@ -455,19 +471,22 @@ struct CreateDecisionView: View {
             createdAt: Date()
         )
         
-        AIService.shared.analyzeDecision(decision: newDecision) { result in
-            isAnalyzing = false
-            
-            switch result {
-            case .success(let analysisResult):
-                var updatedDecision = newDecision
-                updatedDecision.result = analysisResult
-                self.decision = updatedDecision
-                self.decisionStore.addDecision(updatedDecision)
-                self.currentStep = 3
-            case .failure(let error):
-                print("分析失败: \(error.localizedDescription)")
-                // 在实际应用中应该显示错误提示
+        // 模拟网络延迟
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            AIService.shared.analyzeDecision(decision: newDecision) { result in
+                self.isAnalyzing = false
+                
+                switch result {
+                case .success(let analysisResult):
+                    var updatedDecision = newDecision
+                    updatedDecision.result = analysisResult
+                    self.decision = updatedDecision
+                    self.decisionStore.addDecision(updatedDecision)
+                case .failure(let error):
+                    print("分析失败: \(error.localizedDescription)")
+                    // 在实际应用中应该显示错误提示
+                    self.currentStep = 2  // 如果分析失败，回到第2步
+                }
             }
         }
     }
@@ -563,10 +582,12 @@ struct CreateDecisionView: View {
 struct StepIndicator: View {
     let currentStep: Int
     let hasResult: Bool
+    let isAnalyzing: Bool
     
-    init(currentStep: Int, hasResult: Bool = false) {
+    init(currentStep: Int, hasResult: Bool = false, isAnalyzing: Bool = false) {
         self.currentStep = currentStep
         self.hasResult = hasResult
+        self.isAnalyzing = isAnalyzing
     }
     
     var body: some View {
@@ -575,11 +596,11 @@ struct StepIndicator: View {
             
             StepLine(isCompleted: currentStep > 1)
             
-            StepCircle(number: 2, isActive: currentStep == 2, isCompleted: currentStep > 2)
+            StepCircle(number: 2, isActive: currentStep == 2 && !isAnalyzing, isCompleted: currentStep > 2 || (currentStep == 2 && isAnalyzing))
             
-            StepLine(isCompleted: currentStep > 2 || (currentStep == 3 && hasResult))
+            StepLine(isCompleted: currentStep > 2 || (currentStep == 3 && (hasResult || isAnalyzing)))
             
-            StepCircle(number: 3, isActive: currentStep == 3 && !hasResult, isCompleted: currentStep == 3 && hasResult)
+            StepCircle(number: 3, isActive: currentStep == 3 && !hasResult && !isAnalyzing, isCompleted: currentStep == 3 && hasResult, isLoading: currentStep == 3 && isAnalyzing)
         }
         .padding(.horizontal)
     }
@@ -589,6 +610,14 @@ struct StepCircle: View {
     let number: Int
     let isActive: Bool
     let isCompleted: Bool
+    let isLoading: Bool
+    
+    init(number: Int, isActive: Bool, isCompleted: Bool, isLoading: Bool = false) {
+        self.number = number
+        self.isActive = isActive
+        self.isCompleted = isCompleted
+        self.isLoading = isLoading
+    }
     
     var body: some View {
         ZStack {
@@ -596,7 +625,11 @@ struct StepCircle: View {
                 .fill(backgroundColor)
                 .frame(width: 30, height: 30)
             
-            if isCompleted {
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .scaleEffect(0.7)
+            } else if isCompleted {
                 Image(systemName: "checkmark")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.white)
@@ -608,7 +641,7 @@ struct StepCircle: View {
         }
         .overlay(
             Circle()
-                .stroke(isActive || isCompleted ? Color("AppPrimary") : Color.gray.opacity(0.3), lineWidth: 2)
+                .stroke(isActive || isCompleted || isLoading ? Color("AppPrimary") : Color.gray.opacity(0.3), lineWidth: 2)
         )
     }
     
@@ -616,6 +649,8 @@ struct StepCircle: View {
         if isCompleted {
             return Color.green
         } else if isActive {
+            return Color("AppPrimary")
+        } else if isLoading {
             return Color("AppPrimary")
         } else {
             return Color.gray.opacity(0.3)

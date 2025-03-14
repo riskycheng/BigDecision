@@ -164,7 +164,10 @@ struct DecisionCard: View {
     let decision: Decision
     
     var body: some View {
-        NavigationLink(destination: ResultView(decision: decision)) {
+        NavigationLink(destination: 
+            ResultView(decision: decision)
+                .navigationBarTitleDisplayMode(.inline)
+        ) {
             VStack(alignment: .leading, spacing: 10) {
                 Text(decision.title)
                     .font(.headline)
