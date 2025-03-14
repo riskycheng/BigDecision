@@ -8,9 +8,7 @@ struct CreateDecisionView: View {
     @State private var currentStep = 1
     @State private var title = ""
     @State private var optionATitle = ""
-    @State private var optionADescription = ""
     @State private var optionBTitle = ""
-    @State private var optionBDescription = ""
     @State private var additionalInfo = ""
     @State private var decisionType: Decision.DecisionType = .work
     @State private var importance = 3
@@ -161,12 +159,7 @@ struct CreateDecisionView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            TextField("选项A的标题", text: $optionATitle)
-                .padding()
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(10)
-            
-            TextEditor(text: $optionADescription)
+            TextEditor(text: $optionATitle)
                 .frame(height: 100)
                 .padding(5)
                 .background(Color(UIColor.systemBackground))
@@ -177,8 +170,8 @@ struct CreateDecisionView: View {
                 )
                 .overlay(
                     Group {
-                        if optionADescription.isEmpty {
-                            Text("详细描述选项A（可选）")
+                        if optionATitle.isEmpty {
+                            Text("输入选项A的内容")
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 12)
@@ -205,12 +198,7 @@ struct CreateDecisionView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            TextField("选项B的标题", text: $optionBTitle)
-                .padding()
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(10)
-            
-            TextEditor(text: $optionBDescription)
+            TextEditor(text: $optionBTitle)
                 .frame(height: 100)
                 .padding(5)
                 .background(Color(UIColor.systemBackground))
@@ -221,8 +209,8 @@ struct CreateDecisionView: View {
                 )
                 .overlay(
                     Group {
-                        if optionBDescription.isEmpty {
-                            Text("详细描述选项B（可选）")
+                        if optionBTitle.isEmpty {
+                            Text("输入选项B的内容")
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 12)
@@ -232,7 +220,7 @@ struct CreateDecisionView: View {
                     }
                 )
         }
-    }
+    } 
     
     private var additionalInfoView: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -373,8 +361,8 @@ struct CreateDecisionView: View {
         
         let newDecision = Decision(
             title: title,
-            optionA: Decision.Option(title: optionATitle, description: optionADescription),
-            optionB: Decision.Option(title: optionBTitle, description: optionBDescription),
+            optionA: Decision.Option(title: optionATitle, description: ""),
+            optionB: Decision.Option(title: optionBTitle, description: ""),
             additionalInfo: additionalInfo,
             decisionType: decisionType,
             importance: importance,
