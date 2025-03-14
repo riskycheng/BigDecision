@@ -42,6 +42,18 @@ struct ContentView: View {
                         .tag(3)
                 }
                 .accentColor(Color("AppPrimary"))
+                .onAppear {
+                    let tabBarAppearance = UITabBarAppearance()
+                    tabBarAppearance.configureWithOpaqueBackground()
+                    
+                    let normalAppearance = UITabBarItemAppearance()
+                    tabBarAppearance.stackedLayoutAppearance = normalAppearance
+                    
+                    UITabBar.appearance().standardAppearance = tabBarAppearance
+                    if #available(iOS 15.0, *) {
+                        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+                    }
+                }
             }
         }
         .onAppear {

@@ -254,10 +254,6 @@ struct CreateDecisionView: View {
             Text("选项 A")
                 .font(.headline)
             
-            Text("详细描述你的第一个选择")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
             TextEditor(text: $optionATitle)
                 .frame(height: 100)
                 .padding(5)
@@ -292,10 +288,6 @@ struct CreateDecisionView: View {
             
             Text("选项 B")
                 .font(.headline)
-            
-            Text("详细描述你的第二个选择")
-                .font(.caption)
-                .foregroundColor(.secondary)
             
             TextEditor(text: $optionBTitle)
                 .frame(height: 100)
