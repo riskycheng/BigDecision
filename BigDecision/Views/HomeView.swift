@@ -15,13 +15,17 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // 顶部渐变背景
                     ZStack(alignment: .bottom) {
-                        Rectangle()
-                            .fill(LinearGradient(
+                        // 使用GeometryReader确保背景扩展到顶部安全区域之外
+                        GeometryReader { geometry in
+                            LinearGradient(
                                 gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
-                            ))
-                            .frame(height: 180)
+                            )
+                            .frame(width: geometry.size.width, height: geometry.frame(in: .global).minY > 0 ? geometry.frame(in: .global).minY + 180 : 180)
+                            .offset(y: geometry.frame(in: .global).minY > 0 ? -geometry.frame(in: .global).minY : 0)
+                        }
+                        .frame(height: 180)
                         
                         VStack(alignment: .leading, spacing: 10) {
                             Text("你好，用户")
@@ -54,8 +58,8 @@ struct HomeView: View {
                         .padding(.bottom, 20)
                     }
                     
-                    // 最近的决定
-                    VStack(alignment: .leading, spacing: 15) {
+                    // 最近的决定 - 适当调整间距
+                    VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("最近的决定")
                                 .font(.headline)
@@ -68,7 +72,7 @@ struct HomeView: View {
                                     .foregroundColor(Color("AppPrimary"))
                             }
                         }
-                        .padding(.top, 20)
+                        .padding(.top, 15)
                         
                         if decisionStore.decisions.isEmpty {
                             EmptyStateView(
@@ -77,19 +81,21 @@ struct HomeView: View {
                                 buttonText: "创建第一个决定",
                                 action: { showingCreateView = true }
                             )
+                            .frame(height: 150) // 增加空状态视图的高度
                         } else {
                             ForEach(decisionStore.decisions.prefix(2)) { decision in
                                 DecisionCard(decision: decision)
                             }
                         }
                     }
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.vertical, 10) // 增加垂直间距
                     
-                    // 快速操作
-                    VStack(alignment: .leading) {
+                    // 快速操作 - 适当调整间距
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("快速操作")
                             .font(.headline)
-                            .padding(.bottom, 10)
+                            .padding(.bottom, 8)
                         
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
                             ActionCard(icon: "shuffle", title: "随机决定", action: {
@@ -106,10 +112,17 @@ struct HomeView: View {
                             })
                         }
                     }
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.vertical, 10) // 增加垂直间距
+                    
+                    // 添加底部间距，确保内容填充屏幕
+                    Spacer()
+                        .frame(height: 20)
                 }
             }
+            .edgesIgnoringSafeArea(.top) // 忽略顶部安全区域，使背景色延伸到顶部
             .navigationTitle("")
+            .navigationBarHidden(true) // 隐藏导航栏，让背景色完全显示
             .sheet(isPresented: $showingCreateView) {
                 CreateDecisionView()
             }
@@ -227,9 +240,9 @@ struct ActionCard: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
+            VStack(spacing: 10) { // 增加间距
                 Image(systemName: icon)
-                    .font(.system(size: 28))
+                    .font(.system(size: 26)) // 增加图标尺寸
                     .foregroundColor(Color("AppPrimary"))
                 
                 Text(title)
@@ -237,7 +250,8 @@ struct ActionCard: View {
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
-            .padding()
+            .padding(.vertical, 15) // 增加垂直内边距
+            .padding(.horizontal, 10)
             .background(Color(UIColor.systemBackground))
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.05), radius: 5)
@@ -253,21 +267,22 @@ struct EmptyStateView: View {
     let action: () -> Void
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 15) { // 增加间距
             Image(systemName: icon)
-                .font(.system(size: 50))
+                .font(.system(size: 45)) // 增加图标尺寸
                 .foregroundColor(Color.gray.opacity(0.5))
             
             Text(message)
                 .font(.headline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.bottom, 5)
             
             Button(action: action) {
                 Text(buttonText)
                     .font(.headline)
                     .foregroundColor(.white)
-                    .padding()
+                    .padding(.vertical, 12) // 增加按钮垂直内边距
                     .frame(maxWidth: .infinity)
                     .background(Color("AppPrimary"))
                     .cornerRadius(12)

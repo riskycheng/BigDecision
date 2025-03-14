@@ -29,17 +29,11 @@ struct ContentView: View {
                         }
                         .tag(1)
                     
-                    CreateDecisionView()
-                        .tabItem {
-                            Label("新决定", systemImage: "plus.circle.fill")
-                        }
-                        .tag(2)
-                    
                     SettingsView()
                         .tabItem {
                             Label("设置", systemImage: "gear")
                         }
-                        .tag(3)
+                        .tag(2)
                 }
                 .accentColor(Color("AppPrimary"))
                 .onAppear {
