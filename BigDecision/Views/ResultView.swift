@@ -3,6 +3,10 @@ import UIKit
 
 struct ResultView: View {
     let decision: Decision
+    var onShare: (() -> Void)?
+    var onFavorite: (() -> Void)?
+    var onReanalyze: (() -> Void)?
+    var onExport: (() -> Void)?
     
     var body: some View {
         ScrollView {
@@ -96,18 +100,22 @@ struct ResultView: View {
                     HStack(spacing: 15) {
                         ActionButton(icon: "square.and.arrow.up", title: "分享") {
                             // 分享功能
+                            onShare?()
                         }
                         
                         ActionButton(icon: "star", title: "收藏") {
                             // 收藏功能
+                            onFavorite?()
                         }
                         
                         ActionButton(icon: "arrow.counterclockwise", title: "重新分析") {
                             // 重新分析功能
+                            onReanalyze?()
                         }
                         
                         ActionButton(icon: "doc.text", title: "导出") {
                             // 导出功能
+                            onExport?()
                         }
                     }
                 } else {

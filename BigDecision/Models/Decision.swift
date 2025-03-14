@@ -11,6 +11,7 @@ struct Decision: Identifiable, Codable {
     var timeFrame: TimeFrame
     var result: Result?
     var createdAt: Date
+    var isFavorited: Bool = false
     
     struct Option: Codable {
         var title: String

@@ -16,6 +16,11 @@ struct CreateDecisionView: View {
     
     @State private var isAnalyzing = false
     @State private var decision: Decision?
+    @State private var showingShareSheet = false
+    @State private var isFavorited = false
+    @State private var showingExportOptions = false
+    @State private var exportImage: UIImage?
+    @State private var showingExportedImage = false
     
     var body: some View {
         NavigationView {
@@ -44,7 +49,7 @@ struct CreateDecisionView: View {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("取消")
+                        Text(currentStep == 3 ? "完成" : "取消")
                             .font(.subheadline)
                     }
                     .padding()
@@ -54,7 +59,7 @@ struct CreateDecisionView: View {
                 .shadow(color: Color.black.opacity(0.05), radius: 5)
                 
                 // 步骤指示器
-                StepIndicator(currentStep: currentStep)
+                StepIndicator(currentStep: currentStep, hasResult: decision != nil)
                     .padding(.vertical)
                 
                 ScrollView {
@@ -66,7 +71,86 @@ struct CreateDecisionView: View {
                             additionalInfoView
                         case 3:
                             if let decision = decision {
-                                ResultView(decision: decision)
+                                ResultView(decision: decision,
+                                          onShare: {
+                                              showingShareSheet = true
+                                          },
+                                          onFavorite: {
+                                              toggleFavorite()
+                                          },
+                                          onReanalyze: {
+                                              reanalyze()
+                                          },
+                                          onExport: {
+                                              showingExportOptions = true
+                                          })
+                                    .sheet(isPresented: $showingShareSheet) {
+                                        if let result = decision.result {
+                                            let shareText = """
+                                            我使用\"大决定\"分析了一个决策:
+                                            
+                                            决策: \(decision.title)
+                                            选项A: \(decision.optionA.title)
+                                            选项B: \(decision.optionB.title)
+                                            
+                                            AI推荐: \(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
+                                            置信度: \(Int(result.confidence * 100))%
+                                            
+                                            分析理由: \(result.reasoning)
+                                            """
+                                            
+                                            ShareSheet(items: [shareText])
+                                        }
+                                    }
+                                    .alert(isPresented: $showingExportOptions) {
+                                        Alert(
+                                            title: Text("导出决策"),
+                                            message: Text("生成决策分析图片"),
+                                            primaryButton: .default(Text("预览图片")) {
+                                                if let image = exportDecisionAsImage() {
+                                                    exportImage = image
+                                                    showingExportedImage = true
+                                                }
+                                            },
+                                            secondaryButton: .cancel(Text("取消"))
+                                        )
+                                    }
+                                    .sheet(isPresented: $showingExportedImage) {
+                                        if let image = exportImage {
+                                            VStack {
+                                                Text("决策分析图片")
+                                                    .font(.headline)
+                                                    .padding()
+                                                
+                                                Image(uiImage: image)
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .padding()
+                                                
+                                                HStack(spacing: 20) {
+                                                    Button("保存到相册") {
+                                                        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                                                        let feedbackGenerator = UINotificationFeedbackGenerator()
+                                                        feedbackGenerator.notificationOccurred(.success)
+                                                    }
+                                                    .padding()
+                                                    .background(Color("AppPrimary"))
+                                                    .foregroundColor(.white)
+                                                    .cornerRadius(10)
+                                                    
+                                                    Button("关闭") {
+                                                        showingExportedImage = false
+                                                    }
+                                                    .padding()
+                                                    .background(Color.gray.opacity(0.2))
+                                                    .foregroundColor(.primary)
+                                                    .cornerRadius(10)
+                                                }
+                                                .padding(.bottom)
+                                            }
+                                        }
+                                    }
+                                    .environmentObject(decisionStore)
                             } else {
                                 ProgressView("正在分析中...")
                                     .padding()
@@ -387,10 +471,103 @@ struct CreateDecisionView: View {
             }
         }
     }
+    
+    private func toggleFavorite() {
+        isFavorited.toggle()
+        
+        // 更新决策的收藏状态
+        if var currentDecision = decision {
+            currentDecision.isFavorited = isFavorited
+            decision = currentDecision
+            decisionStore.updateDecision(currentDecision)
+            
+            // 显示提示
+            let feedbackGenerator = UINotificationFeedbackGenerator()
+            feedbackGenerator.notificationOccurred(.success)
+        }
+    }
+    
+    private func reanalyze() {
+        // 返回到第二步，保留已填写的信息
+        currentStep = 2
+    }
+    
+    private func exportDecisionAsImage() -> UIImage? {
+        guard let decision = decision, let result = decision.result else { return nil }
+        
+        // 创建一个简单的渲染视图
+        let exportView = VStack(spacing: 15) {
+            // 标题
+            Text("决策分析报告")
+                .font(.title)
+                .fontWeight(.bold)
+                .padding(.top)
+            
+            // 决策信息
+            VStack(alignment: .leading, spacing: 8) {
+                Text("决策: \(decision.title)")
+                    .font(.headline)
+                    .padding(.bottom, 5)
+                
+                Text("选项A: \(decision.optionA.title)")
+                Text("选项B: \(decision.optionB.title)")
+                    .padding(.bottom, 5)
+                
+                Text("AI推荐: \(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)")
+                    .fontWeight(.bold)
+                
+                Text("置信度: \(Int(result.confidence * 100))%")
+                    .padding(.bottom, 5)
+                
+                Text("分析理由:")
+                    .fontWeight(.bold)
+                
+                Text(result.reasoning)
+                    .font(.body)
+                    .lineLimit(10)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(10)
+            
+            Spacer()
+            
+            // 底部信息
+            Text("由\"大决定\"App生成")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.bottom)
+        }
+        .padding()
+        .frame(width: 350, height: 500)
+        .background(Color.white)
+        
+        // 使用更简单的方式渲染图片
+        let controller = UIHostingController(rootView: exportView)
+        controller.view.frame = CGRect(x: 0, y: 0, width: 350, height: 500)
+        
+        // 确保视图已经布局
+        controller.view.layoutIfNeeded()
+        
+        // 创建图片上下文并渲染
+        UIGraphicsBeginImageContextWithOptions(controller.view.bounds.size, false, 0)
+        controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return image
+    }
 }
 
 struct StepIndicator: View {
     let currentStep: Int
+    let hasResult: Bool
+    
+    init(currentStep: Int, hasResult: Bool = false) {
+        self.currentStep = currentStep
+        self.hasResult = hasResult
+    }
     
     var body: some View {
         HStack {
@@ -400,9 +577,9 @@ struct StepIndicator: View {
             
             StepCircle(number: 2, isActive: currentStep == 2, isCompleted: currentStep > 2)
             
-            StepLine(isCompleted: currentStep > 2)
+            StepLine(isCompleted: currentStep > 2 || (currentStep == 3 && hasResult))
             
-            StepCircle(number: 3, isActive: currentStep == 3, isCompleted: false)
+            StepCircle(number: 3, isActive: currentStep == 3 && !hasResult, isCompleted: currentStep == 3 && hasResult)
         }
         .padding(.horizontal)
     }
@@ -492,6 +669,18 @@ struct DecisionTypeButton: View {
             .cornerRadius(20)
         }
     }
+}
+
+// 添加ShareSheet视图用于系统分享
+struct ShareSheet: UIViewControllerRepresentable {
+    var items: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 #Preview {
