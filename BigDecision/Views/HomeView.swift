@@ -60,7 +60,7 @@ struct HomeView: View {
                     .frame(height: 180)
                     
                     ScrollView {
-                        VStack(spacing: 25) {
+                        VStack(spacing: 30) {
                             // 最近的决定区域
                             VStack(spacing: 15) {
                                 // 标题区域
@@ -80,7 +80,7 @@ struct HomeView: View {
                                 
                                 // 内容区域
                                 if decisionStore.decisions.isEmpty {
-                                    // 空状态视图
+                                    // 空状态视图 - 移除背景色，使用外部容器的背景色
                                     EmptyStateView(
                                         icon: "list.bullet.clipboard",
                                         message: "你还没有做过任何决定",
@@ -89,6 +89,7 @@ struct HomeView: View {
                                     )
                                     .padding(.horizontal)
                                     .frame(height: 200)
+                                    .background(Color.clear) // 确保背景透明
                                 } else {
                                     // 决定卡片列表
                                     VStack(spacing: 10) {
@@ -100,6 +101,10 @@ struct HomeView: View {
                                 }
                             }
                             .padding(.top, 20)
+                            .padding(.bottom, 15)
+                            .background(Color.white) // 使用纯白色背景
+                            .cornerRadius(15)
+                            .padding(.horizontal, 5)
                             
                             // 快速操作区域
                             VStack(spacing: 15) {
@@ -110,9 +115,11 @@ struct HomeView: View {
                                     Spacer()
                                 }
                                 .padding(.horizontal)
+                                .padding(.top, 10)
+                                .padding(.bottom, 10)
                                 
-                                // 操作卡片
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                                // 操作卡片 - 匹配附图中的样式
+                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                                     ActionCard(icon: "shuffle", title: "随机决定", action: {
                                         randomDecision()
                                     })
@@ -127,7 +134,11 @@ struct HomeView: View {
                                     })
                                 }
                                 .padding(.horizontal)
+                                .padding(.bottom, 15)
                             }
+                            .background(Color(.systemGroupedBackground)) // 使用系统分组背景色
+                            .cornerRadius(15)
+                            .padding(.horizontal, 5)
                             
                             // 底部空间
                             Spacer(minLength: 80)

@@ -7,9 +7,9 @@ struct ActionCard: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 24))
                     .foregroundColor(Color("AppPrimary"))
                 
                 Text(title)
@@ -18,10 +18,10 @@ struct ActionCard: View {
                     .foregroundColor(.primary)
                     .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, minHeight: 60)
-            .padding(.vertical, 6)
-            .background(Color(.systemBackground))
-            .cornerRadius(10)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 15)
+            .background(Color.white)
+            .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
     }
@@ -32,5 +32,6 @@ struct ActionCard_Previews: PreviewProvider {
         ActionCard(icon: "shuffle", title: "随机决定", action: {})
             .previewLayout(.sizeThatFits)
             .padding()
+            .background(Color(.systemGroupedBackground))
     }
 } 

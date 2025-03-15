@@ -35,8 +35,6 @@ struct EmptyStateView: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 }
 
@@ -51,5 +49,6 @@ struct EmptyStateView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .frame(height: 250)
         .padding()
+        .background(Color.white)
     }
 } 
