@@ -63,10 +63,11 @@ struct HomeView: View {
                         VStack(spacing: 30) {
                             // 最近的决定区域
                             VStack(spacing: 15) {
-                                // 标题区域
+                                // 标题区域 - 修改样式与间距
                                 HStack {
                                     Text("最近的决定")
-                                        .font(.headline)
+                                        .font(.title3)
+                                        .fontWeight(.bold)
                                     
                                     Spacer()
                                     
@@ -77,6 +78,8 @@ struct HomeView: View {
                                     }
                                 }
                                 .padding(.horizontal)
+                                .padding(.top, 16)
+                                .padding(.bottom, 8)
                                 
                                 // 内容区域
                                 if decisionStore.decisions.isEmpty {
@@ -98,25 +101,25 @@ struct HomeView: View {
                                                 .padding(.horizontal)
                                         }
                                     }
+                                    .padding(.bottom, 16)
                                 }
                             }
-                            .padding(.top, 20)
-                            .padding(.bottom, 15)
                             .background(Color.white) // 使用纯白色背景
                             .cornerRadius(15)
                             .padding(.horizontal, 5)
                             
                             // 快速操作区域
                             VStack(spacing: 15) {
-                                // 标题
+                                // 标题 - 修改样式与间距，与"最近的决定"保持一致
                                 HStack {
                                     Text("快速操作")
-                                        .font(.headline)
+                                        .font(.title3)
+                                        .fontWeight(.bold)
                                     Spacer()
                                 }
                                 .padding(.horizontal)
-                                .padding(.top, 10)
-                                .padding(.bottom, 10)
+                                .padding(.top, 16)
+                                .padding(.bottom, 8)
                                 
                                 // 操作卡片 - 匹配附图中的样式
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -134,9 +137,9 @@ struct HomeView: View {
                                     })
                                 }
                                 .padding(.horizontal)
-                                .padding(.bottom, 15)
+                                .padding(.bottom, 16)
                             }
-                            .background(Color(.systemGroupedBackground)) // 使用系统分组背景色
+                            .background(Color.white) // 修改为白色背景，与"最近的决定"保持一致
                             .cornerRadius(15)
                             .padding(.horizontal, 5)
                             

@@ -9,6 +9,8 @@ struct CreateDecisionView: View {
     @State private var title = ""
     @State private var optionATitle = ""
     @State private var optionBTitle = ""
+    @State private var optionADescription = ""
+    @State private var optionBDescription = ""
     @State private var additionalInfo = ""
     @State private var decisionType: Decision.DecisionType = .work
     @State private var importance = 3
@@ -251,10 +253,26 @@ struct CreateDecisionView: View {
         VStack(alignment: .leading, spacing: 20) {
             FormField(title: "决定标题", placeholder: "例如：是否换工作？", text: $title)
             
+            // 选项A
             Text("选项 A")
                 .font(.headline)
             
-            TextEditor(text: $optionATitle)
+            // 选项A标题
+            TextField("选项A标题", text: $optionATitle)
+                .padding()
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                )
+            
+            // 选项A详细描述
+            Text("选项A详细描述")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            TextEditor(text: $optionADescription)
                 .frame(height: 100)
                 .padding(5)
                 .background(Color(UIColor.systemBackground))
@@ -265,8 +283,8 @@ struct CreateDecisionView: View {
                 )
                 .overlay(
                     Group {
-                        if optionATitle.isEmpty {
-                            Text("输入选项A的内容")
+                        if optionADescription.isEmpty {
+                            Text("输入选项A的详细描述")
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 12)
@@ -286,10 +304,26 @@ struct CreateDecisionView: View {
                         .background(Color(UIColor.systemBackground))
                 )
             
+            // 选项B
             Text("选项 B")
                 .font(.headline)
             
-            TextEditor(text: $optionBTitle)
+            // 选项B标题
+            TextField("选项B标题", text: $optionBTitle)
+                .padding()
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                )
+            
+            // 选项B详细描述
+            Text("选项B详细描述")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            TextEditor(text: $optionBDescription)
                 .frame(height: 100)
                 .padding(5)
                 .background(Color(UIColor.systemBackground))
@@ -300,8 +334,8 @@ struct CreateDecisionView: View {
                 )
                 .overlay(
                     Group {
-                        if optionBTitle.isEmpty {
-                            Text("输入选项B的内容")
+                        if optionBDescription.isEmpty {
+                            Text("输入选项B的详细描述")
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 12)
@@ -453,8 +487,8 @@ struct CreateDecisionView: View {
         
         let newDecision = Decision(
             title: title,
-            optionA: Decision.Option(title: optionATitle, description: ""),
-            optionB: Decision.Option(title: optionBTitle, description: ""),
+            optionA: Decision.Option(title: optionATitle, description: optionADescription),
+            optionB: Decision.Option(title: optionBTitle, description: optionBDescription),
             additionalInfo: additionalInfo,
             decisionType: decisionType,
             importance: importance,
