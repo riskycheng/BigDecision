@@ -19,7 +19,7 @@ struct HomeView: View {
                 // 主内容
                 VStack(spacing: 0) {
                     // 顶部渐变背景
-                    ZStack(alignment: .bottom) {
+                    ZStack(alignment: .top) {
                         LinearGradient(
                             gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
                             startPoint: .topLeading,
@@ -27,11 +27,13 @@ struct HomeView: View {
                         )
                         .edgesIgnoringSafeArea(.top)
                         
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            // 减小内部间距
                             Text("你好，用户")
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
+                                .padding(.top, 25) // 减少顶部距离
                             
                             Text("需要帮你做决定吗？")
                                 .font(.subheadline)
@@ -46,21 +48,22 @@ struct HomeView: View {
                                 }
                                 .font(.headline)
                                 .foregroundColor(Color("AppPrimary"))
-                                .padding()
+                                .padding(.vertical, 12) // 保持按钮的垂直内边距
                                 .frame(maxWidth: .infinity)
                                 .background(Color.white)
                                 .cornerRadius(12)
                                 .shadow(color: Color.black.opacity(0.1), radius: 5)
                             }
-                            .padding(.top, 8)
+                            .padding(.top, 6) // 保持按钮上方的间距
+                            .padding(.bottom, 15) // 增加按钮下方的间距
                         }
                         .padding(.horizontal)
-                        .padding(.bottom, 15)
+                        .frame(maxWidth: .infinity) // 确保宽度填满
                     }
-                    .frame(height: 180)
+                    .frame(height: 150) // 保持整个顶部区域的高度
                     
                     ScrollView {
-                        VStack(spacing: 30) {
+                        VStack(spacing: 20) { // 减小区域之间的间距
                             // 最近的决定区域
                             VStack(spacing: 15) {
                                 // 标题区域 - 修改样式与间距
@@ -91,7 +94,7 @@ struct HomeView: View {
                                         action: { showingCreateView = true }
                                     )
                                     .padding(.horizontal)
-                                    .frame(height: 200)
+                                    .frame(height: 180) // 减小空状态视图的高度
                                     .background(Color.clear) // 确保背景透明
                                 } else {
                                     // 决定卡片列表
@@ -104,7 +107,7 @@ struct HomeView: View {
                                     .padding(.bottom, 16)
                                 }
                             }
-                            .background(Color.white) // 使用纯白色背景
+                            .background(Color(.systemBackground)) // 使用系统背景色，与卡片形成对比
                             .cornerRadius(15)
                             .padding(.horizontal, 5)
                             
@@ -139,12 +142,12 @@ struct HomeView: View {
                                 .padding(.horizontal)
                                 .padding(.bottom, 16)
                             }
-                            .background(Color.white) // 修改为白色背景，与"最近的决定"保持一致
+                            .background(Color(.systemBackground)) // 使用系统背景色，与卡片形成对比
                             .cornerRadius(15)
                             .padding(.horizontal, 5)
                             
                             // 底部空间
-                            Spacer(minLength: 80)
+                            Spacer(minLength: 60) // 减小底部空间
                         }
                         .padding(.top, 10)
                     }
