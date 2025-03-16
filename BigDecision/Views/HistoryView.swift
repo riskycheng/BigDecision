@@ -25,7 +25,6 @@ struct HistoryView: View {
     @State private var searchText = ""
     @State private var selectedFilter: DecisionFilter
     @State private var selectedDecision: Decision? = nil
-    @State private var showingResultView = false
     
     init(initialFilter: DecisionFilter = .all) {
         _selectedFilter = State(initialValue: initialFilter)
@@ -117,7 +116,6 @@ struct HistoryView: View {
                         ForEach(filteredDecisions) { decision in
                             Button(action: {
                                 selectedDecision = decision
-                                showingResultView = true
                             }) {
                                 HistoryItemRow(decision: decision)
                             }
@@ -132,10 +130,8 @@ struct HistoryView: View {
                 }
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $showingResultView) {
-                if let decision = selectedDecision {
-                    ResultView(decision: decision)
-                }
+            .sheet(item: $selectedDecision) { decision in
+                ResultView(decision: decision)
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())

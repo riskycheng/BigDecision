@@ -163,6 +163,9 @@ struct HomeView: View {
                 }
             }
         }
+        .sheet(item: $selectedDecision) { decision in
+            ResultView(decision: decision)
+        }
         .sheet(isPresented: $showingCreateView) {
             CreateDecisionView()
         }
@@ -180,11 +183,6 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showingStatsView) {
             StatsView()
-        }
-        .sheet(isPresented: $showingResultView) {
-            if let decision = selectedDecision {
-                ResultView(decision: decision)
-            }
         }
         .sheet(isPresented: $showingHistoryView) {
             HistoryView()
