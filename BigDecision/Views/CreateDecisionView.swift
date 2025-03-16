@@ -232,7 +232,7 @@ struct CreateDecisionView: View {
                     .font(.system(size: 17, weight: .semibold))
                 
                 CustomTextField(
-                    placeholder: "选项A标题",
+                    title: "选项A标题",
                     text: $optionATitle,
                     icon: "a.circle.fill"
                 )
@@ -261,7 +261,7 @@ struct CreateDecisionView: View {
                     .font(.system(size: 17, weight: .semibold))
                 
                 CustomTextField(
-                    placeholder: "选项B标题",
+                    title: "选项B标题",
                     text: $optionBTitle,
                     icon: "b.circle.fill"
                 )
@@ -692,29 +692,6 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 // 自定义组件
-
-struct CustomTextField: View {
-    let placeholder: String
-    @Binding var text: String
-    var icon: String? = nil
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            if let icon = icon {
-                Image(systemName: icon)
-                    .foregroundColor(Color("AppPrimary"))
-                    .frame(width: 20)
-            }
-            
-            TextField(placeholder, text: $text)
-        }
-        .padding(.vertical, 12)
-        .padding(.horizontal)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
-    }
-}
 
 struct CustomTextEditor: View {
     let placeholder: String
