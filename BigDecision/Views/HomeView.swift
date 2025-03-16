@@ -170,35 +170,44 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showingFavoritesView) {
                 // 收藏的决定视图
-                Text("收藏功能即将上线")
-                    .font(.headline)
-                    .padding()
+                HistoryView(initialFilter: .favorites)
             }
             .sheet(isPresented: $showingStatsView) {
-                // 决定统计视图
-                Text("统计功能即将上线")
-                    .font(.headline)
-                    .padding()
+                StatsView()
             }
         }
     }
     
     func randomDecision() {
         if !decisionStore.decisions.isEmpty {
+            // 从已有决定中随机选择
             showingRandomDecisionView = true
         } else {
-            // 如果没有决定，提示用户创建一个
+            // 从预设决定中随机选择
+            let presetDecision = PresetDecision.random()
             showingCreateView = true
+            // 这里需要通过环境变量或其他方式将预设决定传递给 CreateDecisionView
         }
     }
     
     func shareApp() {
-        showingShareSheet = true
+        let text = """
+        我正在使用"大决定"App来帮助我做出更明智的选择！
         
-        // 在实际应用中，这里应该实现分享功能
-        // 由于这是一个示例，我们只是显示一个提示
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            showingShareSheet = false
+        它使用 AI 技术帮助分析决策，考虑多个维度，给出科学的建议。
+        
+        你也来试试吧！
+        """
+        
+        let activityVC = UIActivityViewController(
+            activityItems: [text],
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            rootVC.present(activityVC, animated: true)
         }
     }
 }

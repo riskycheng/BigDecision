@@ -4,6 +4,7 @@ import UIKit
 // 决策过滤器枚举
 enum DecisionFilter: String, CaseIterable {
     case all = "全部"
+    case favorites = "收藏"
     case work = "工作"
     case relationship = "感情"
     case education = "教育"
@@ -19,11 +20,16 @@ enum DecisionFilter: String, CaseIterable {
 }
 
 struct HistoryView: View {
+    @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var decisionStore: DecisionStore
     @State private var searchText = ""
-    @State private var selectedFilter: DecisionFilter = .all
+    @State private var selectedFilter: DecisionFilter
     @State private var selectedDecision: Decision? = nil
     @State private var showingResultView = false
+    
+    init(initialFilter: DecisionFilter = .all) {
+        _selectedFilter = State(initialValue: initialFilter)
+    }
     
     var filteredDecisions: [Decision] {
         var decisions = decisionStore.decisions
@@ -38,29 +44,13 @@ struct HistoryView: View {
         }
         
         // 按过滤器过滤
-        if selectedFilter != .all {
-            decisions = decisions.filter { decision in
-                switch selectedFilter {
-                case .work:
-                    return decision.decisionType == .work
-                case .relationship:
-                    return decision.decisionType == .relationship
-                case .education:
-                    return decision.decisionType == .education
-                case .housing:
-                    return decision.decisionType == .housing
-                case .travel:
-                    return decision.decisionType == .travel
-                case .shopping:
-                    return decision.decisionType == .shopping
-                case .investment:
-                    return decision.decisionType == .investment
-                case .other:
-                    return decision.decisionType == .other
-                default:
-                    return true
-                }
-            }
+        switch selectedFilter {
+        case .favorites:
+            decisions = decisions.filter { $0.isFavorited }
+        case .all:
+            break
+        default:
+            decisions = decisions.filter { $0.decisionType.rawValue == selectedFilter.rawValue }
         }
         
         // 按时间排序（最新的在前面）
@@ -125,10 +115,7 @@ struct HistoryView: View {
                     // 决策列表
                     List {
                         ForEach(filteredDecisions) { decision in
-                            Button(action: {
-                                selectedDecision = decision
-                                showingResultView = true
-                            }) {
+                            NavigationLink(destination: ResultView(decision: decision)) {
                                 HistoryItemRow(decision: decision)
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -142,11 +129,6 @@ struct HistoryView: View {
                 }
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $showingResultView) {
-                if let decision = selectedDecision {
-                    ResultView(decision: decision)
-                }
-            }
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }

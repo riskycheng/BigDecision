@@ -1,31 +1,45 @@
 import Foundation
 
 struct Decision: Identifiable, Codable {
-    var id = UUID()
-    var title: String
-    var optionA: Option
-    var optionB: Option
-    var additionalInfo: String
-    var decisionType: DecisionType
-    var importance: Int // 1-5
-    var timeFrame: TimeFrame
+    let id: UUID
+    let title: String
+    let optionA: Option
+    let optionB: Option
+    let additionalInfo: String
+    let decisionType: DecisionType
+    let importance: Int // 1-5
+    let timeFrame: TimeFrame
     var result: Result?
-    var createdAt: Date
-    var isFavorited: Bool = false
+    let createdAt: Date
+    var isFavorited: Bool
+    
+    init(id: UUID = UUID(), title: String, optionA: Option, optionB: Option, additionalInfo: String, decisionType: DecisionType, importance: Int, timeFrame: TimeFrame, result: Result? = nil, createdAt: Date = Date(), isFavorited: Bool = false) {
+        self.id = id
+        self.title = title
+        self.optionA = optionA
+        self.optionB = optionB
+        self.additionalInfo = additionalInfo
+        self.decisionType = decisionType
+        self.importance = importance
+        self.timeFrame = timeFrame
+        self.result = result
+        self.createdAt = createdAt
+        self.isFavorited = isFavorited
+    }
     
     struct Option: Codable {
-        var title: String
-        var description: String
+        let title: String
+        let description: String
     }
     
     struct Result: Codable {
-        var recommendation: String // "A" 或 "B"
-        var confidence: Double // 0-1
-        var reasoning: String
-        var prosA: [String]
-        var consA: [String]
-        var prosB: [String]
-        var consB: [String]
+        let recommendation: String // "A" 或 "B"
+        let confidence: Double // 0-1
+        let reasoning: String
+        let prosA: [String]
+        let consA: [String]
+        let prosB: [String]
+        let consB: [String]
     }
     
     enum DecisionType: String, Codable, CaseIterable {
@@ -58,5 +72,18 @@ struct Decision: Identifiable, Codable {
         case week = "一周内"
         case month = "一个月内"
         case longTerm = "长期考虑"
+    }
+    
+    // 从预设决定创建新决定
+    static func fromPreset(_ preset: PresetDecision) -> Decision {
+        Decision(
+            title: preset.title,
+            optionA: preset.optionA,
+            optionB: preset.optionB,
+            additionalInfo: "",
+            decisionType: preset.decisionType,
+            importance: preset.importance,
+            timeFrame: preset.timeFrame
+        )
     }
 } 

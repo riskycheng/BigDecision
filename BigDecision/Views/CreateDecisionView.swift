@@ -83,11 +83,10 @@ struct CreateDecisionView: View {
                                 additionalInfoView
                             case 3:
                                 if let decision = decision {
-                                    ResultView(decision: decision,
-                                             onShare: { showingShareSheet = true },
-                                             onFavorite: { toggleFavorite() },
-                                             onReanalyze: { reanalyze() },
-                                             onExport: { showingExportOptions = true })
+                                    VStack {
+                                        ResultView(decision: decision)
+                                    }
+                                    .background(Color(.systemGroupedBackground))
                                 } else {
                                     // 加载动画视图
                                     VStack(spacing: 25) {
