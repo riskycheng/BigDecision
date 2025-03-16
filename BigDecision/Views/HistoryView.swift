@@ -115,7 +115,10 @@ struct HistoryView: View {
                     // 决策列表
                     List {
                         ForEach(filteredDecisions) { decision in
-                            NavigationLink(destination: ResultView(decision: decision)) {
+                            Button(action: {
+                                selectedDecision = decision
+                                showingResultView = true
+                            }) {
                                 HistoryItemRow(decision: decision)
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -129,6 +132,11 @@ struct HistoryView: View {
                 }
             }
             .navigationBarHidden(true)
+            .sheet(isPresented: $showingResultView) {
+                if let decision = selectedDecision {
+                    ResultView(decision: decision)
+                }
+            }
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }

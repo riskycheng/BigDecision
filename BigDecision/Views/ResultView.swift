@@ -17,185 +17,197 @@ struct ResultView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                if let result = decision.result {
-                    // AI推荐结果卡片
-                    VStack(spacing: 15) {
-                        Text("AI推荐你选择")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                        
-                        Text(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        
-                        HStack(spacing: 8) {
-                            Text("推荐置信度")
-                                .font(.system(size: 15))
-                                .foregroundColor(.white.opacity(0.9))
-                            
-                            GeometryReader { geometry in
-                                ZStack(alignment: .leading) {
-                                    // 背景条
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(Color.white.opacity(0.3))
-                                        .frame(height: 4)
+        NavigationView {
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        if let result = decision.result {
+                            // AI推荐结果卡片
+                            VStack(spacing: 15) {
+                                Text("AI推荐你选择")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                
+                                Text(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                
+                                HStack(spacing: 8) {
+                                    Text("推荐置信度")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.white.opacity(0.9))
                                     
-                                    // 进度条
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(Color.white)
-                                        .frame(width: geometry.size.width * result.confidence, height: 4)
+                                    GeometryReader { geometry in
+                                        ZStack(alignment: .leading) {
+                                            // 背景条
+                                            RoundedRectangle(cornerRadius: 2)
+                                                .fill(Color.white.opacity(0.3))
+                                                .frame(height: 4)
+                                            
+                                            // 进度条
+                                            RoundedRectangle(cornerRadius: 2)
+                                                .fill(Color.white)
+                                                .frame(width: geometry.size.width * result.confidence, height: 4)
+                                        }
+                                    }
+                                    .frame(height: 4)
+                                    .frame(width: 100)
+                                    
+                                    Text("\(Int(result.confidence * 100))%")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.top, 5)
+                            }
+                            .padding(.vertical, 25)
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(16)
+                            
+                            // 选项A分析
+                            VStack(alignment: .leading, spacing: 15) {
+                                Text("选项A: \(decision.optionA.title)")
+                                    .font(.system(size: 16, weight: .medium))
+                                
+                                Text("优势")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                
+                                ForEach(result.prosA.indices, id: \.self) { index in
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "plus.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text(result.prosA[index])
+                                            .font(.system(size: 15))
+                                    }
+                                }
+                                
+                                Text("劣势")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 8)
+                                
+                                ForEach(result.consA.indices, id: \.self) { index in
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "minus.circle.fill")
+                                            .foregroundColor(.red)
+                                        Text(result.consA[index])
+                                            .font(.system(size: 15))
+                                    }
                                 }
                             }
-                            .frame(height: 4)
-                            .frame(width: 100)
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white)
+                            .cornerRadius(12)
                             
-                            Text("\(Int(result.confidence * 100))%")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(.white)
+                            // 选项B分析
+                            VStack(alignment: .leading, spacing: 15) {
+                                Text("选项B: \(decision.optionB.title)")
+                                    .font(.system(size: 16, weight: .medium))
+                                
+                                Text("优势")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                
+                                ForEach(result.prosB.indices, id: \.self) { index in
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "plus.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text(result.prosB[index])
+                                            .font(.system(size: 15))
+                                    }
+                                }
+                                
+                                Text("劣势")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 8)
+                                
+                                ForEach(result.consB.indices, id: \.self) { index in
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "minus.circle.fill")
+                                            .foregroundColor(.red)
+                                        Text(result.consB[index])
+                                            .font(.system(size: 15))
+                                    }
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            
+                            // 分析理由
+                            VStack(alignment: .leading, spacing: 15) {
+                                HStack {
+                                    Image(systemName: "magnifyingglass.circle.fill")
+                                        .foregroundColor(Color("AppPrimary"))
+                                    Text("分析理由")
+                                        .font(.headline)
+                                }
+                                
+                                Text(result.reasoning)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(4)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white)
+                            .cornerRadius(12)
                         }
-                        .padding(.top, 5)
                     }
-                    .padding(.vertical, 25)
                     .padding(.horizontal)
-                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 80)
+                }
+                .background(Color(.systemGroupedBackground))
+                
+                // 底部操作按钮
+                VStack {
+                    HStack(spacing: 30) {
+                        ActionButton(icon: "square.and.arrow.up", title: "分享") {
+                            shareDecision()
+                        }
+                        
+                        ActionButton(icon: isFavorited ? "star.fill" : "star", title: "收藏") {
+                            toggleFavorite()
+                        }
+                        
+                        ActionButton(icon: "arrow.clockwise", title: "重新分析") {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                        
+                        ActionButton(icon: "doc.text", title: "导出") {
+                            showingExportOptions = true
+                        }
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal)
                     .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+                        Color.white
+                            .shadow(color: Color.black.opacity(0.05), radius: 8, y: -4)
                     )
-                    .cornerRadius(16)
-                    
-                    // 选项A分析
-                    VStack(alignment: .leading, spacing: 15) {
-                        Text("选项A: \(decision.optionA.title)")
-                            .font(.system(size: 16, weight: .medium))
-                        
-                        Text("优势")
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                        
-                        ForEach(result.prosA.indices, id: \.self) { index in
-                            HStack(spacing: 8) {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.green)
-                                Text(result.prosA[index])
-                                    .font(.system(size: 15))
-                            }
-                        }
-                        
-                        Text("劣势")
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                            .padding(.top, 8)
-                        
-                        ForEach(result.consA.indices, id: \.self) { index in
-                            HStack(spacing: 8) {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.red)
-                                Text(result.consA[index])
-                                    .font(.system(size: 15))
-                            }
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    
-                    // 选项B分析
-                    VStack(alignment: .leading, spacing: 15) {
-                        Text("选项B: \(decision.optionB.title)")
-                            .font(.system(size: 16, weight: .medium))
-                        
-                        Text("优势")
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                        
-                        ForEach(result.prosB.indices, id: \.self) { index in
-                            HStack(spacing: 8) {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.green)
-                                Text(result.prosB[index])
-                                    .font(.system(size: 15))
-                            }
-                        }
-                        
-                        Text("劣势")
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                            .padding(.top, 8)
-                        
-                        ForEach(result.consB.indices, id: \.self) { index in
-                            HStack(spacing: 8) {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.red)
-                                Text(result.consB[index])
-                                    .font(.system(size: 15))
-                            }
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    
-                    // 分析理由
-                    VStack(alignment: .leading, spacing: 15) {
-                        HStack {
-                            Image(systemName: "magnifyingglass.circle.fill")
-                                .foregroundColor(Color("AppPrimary"))
-                            Text("分析理由")
-                                .font(.headline)
-                        }
-                        
-                        Text(result.reasoning)
-                            .font(.system(size: 15))
-                            .foregroundColor(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(4)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white)
-                    .cornerRadius(12)
                 }
+                .background(Color.white)
             }
-            .padding(.horizontal)
-        }
-        .background(Color(.systemGroupedBackground))
-        .safeAreaInset(edge: .bottom) {
-            // 底部操作按钮
-            VStack {
-                HStack(spacing: 30) {
-                    ActionButton(icon: "square.and.arrow.up", title: "分享") {
-                        shareDecision()
-                    }
-                    
-                    ActionButton(icon: isFavorited ? "star.fill" : "star", title: "收藏") {
-                        toggleFavorite()
-                    }
-                    
-                    ActionButton(icon: "arrow.clockwise", title: "重新分析") {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                    
-                    ActionButton(icon: "doc.text", title: "导出") {
-                        showingExportOptions = true
-                    }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("分析结果")
+            .navigationBarItems(
+                trailing: Button("完成") {
+                    presentationMode.wrappedValue.dismiss()
                 }
-                .padding(.vertical, 12)
-                .padding(.horizontal)
-                .background(
-                    Color.white
-                        .shadow(color: Color.black.opacity(0.05), radius: 8, y: -4)
-                )
-            }
+            )
         }
         .sheet(isPresented: $showingShareSheet) {
             if let result = decision.result {
