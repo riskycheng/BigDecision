@@ -1,5 +1,36 @@
 import SwiftUI
 
+struct WaveShape: Shape {
+    var offset: CGFloat
+    var waveHeight: CGFloat
+    
+    var animatableData: CGFloat {
+        get { offset }
+        set { offset = newValue }
+    }
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.width
+        let height = rect.height
+        let midHeight = height / 2
+        
+        path.move(to: CGPoint(x: 0, y: midHeight))
+        
+        for x in stride(from: 0, through: width, by: 1) {
+            let relativeX = x / 50 + offset
+            let y = sin(relativeX) * waveHeight + midHeight
+            path.addLine(to: CGPoint(x: x, y: y))
+        }
+        
+        path.addLine(to: CGPoint(x: width, y: height))
+        path.addLine(to: CGPoint(x: 0, y: height))
+        path.closeSubpath()
+        
+        return path
+    }
+}
+
 struct SettingsView: View {
     @AppStorage("userName") private var userName = ""
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
@@ -8,7 +39,19 @@ struct SettingsView: View {
     
     @State private var showingResetAlert = false
     @State private var showingAboutSheet = false
-    @State private var searchText = ""
+    @State private var waveOffset: CGFloat = 0
+    @State private var textIndex = 0
+    
+    private let texts = ["智能决策", "科学分析", "多方权衡"]
+    private let gradient = LinearGradient(
+        gradient: Gradient(colors: [
+            Color("AppPrimary").opacity(0.8),
+            Color("AppPrimary").opacity(0.4),
+            Color("AppPrimary").opacity(0.2)
+        ]),
+        startPoint: .top,
+        endPoint: .bottom
+    )
     
     private var filteredSettings: [String: [String]] {
         let allSettings = [
@@ -18,18 +61,7 @@ struct SettingsView: View {
             "关于": ["关于大决定", "隐私政策", "使用条款"]
         ]
         
-        if searchText.isEmpty {
-            return allSettings
-        }
-        
-        var filtered = [String: [String]]()
-        for (section, items) in allSettings {
-            let matchedItems = items.filter { $0.localizedCaseInsensitiveContains(searchText) }
-            if !matchedItems.isEmpty {
-                filtered[section] = matchedItems
-            }
-        }
-        return filtered
+        return allSettings
     }
     
     var body: some View {
@@ -60,9 +92,47 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.9))
                             
-                            SearchBar(text: $searchText, placeholder: "搜索设置...")
-                                .padding(.top, 6)
-                                .padding(.bottom, 15)
+                            // 动画按钮
+                            ZStack {
+                                // 白色按钮背景
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.white)
+                                    .shadow(color: Color.black.opacity(0.1), radius: 5)
+                                    .frame(height: 50)
+                                
+                                // 波浪动画层
+                                ZStack {
+                                    // 第一层波浪
+                                    WaveShape(offset: waveOffset, waveHeight: 8)
+                                        .fill(gradient)
+                                        .opacity(0.3)
+                                    
+                                    // 第二层波浪（错开相位）
+                                    WaveShape(offset: waveOffset + .pi, waveHeight: 6)
+                                        .fill(gradient)
+                                        .opacity(0.2)
+                                }
+                                .mask(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .frame(height: 50)
+                                )
+                                
+                                // 文字层
+                                HStack(spacing: 12) {
+                                    Text("AI")
+                                        .font(.system(size: 18, weight: .bold))
+                                    Text("·")
+                                        .font(.system(size: 18))
+                                        .opacity(0.5)
+                                    Text(texts[textIndex])
+                                        .font(.system(size: 18, weight: .medium))
+                                        .transition(.move(edge: .top).combined(with: .opacity))
+                                        .id(texts[textIndex]) // 确保每次文字改变时触发动画
+                                }
+                                .foregroundColor(Color("AppPrimary"))
+                            }
+                            .padding(.top, 6)
+                            .padding(.bottom, 15)
                         }
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -256,6 +326,23 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingAboutSheet) {
                 AboutView()
+            }
+            .onAppear {
+                // 波浪动画
+                withAnimation(
+                    Animation
+                        .linear(duration: 4)
+                        .repeatForever(autoreverses: false)
+                ) {
+                    waveOffset = .pi * 2
+                }
+                
+                // 文字切换动画
+                Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        textIndex = (textIndex + 1) % texts.count
+                    }
+                }
             }
         }
     }
