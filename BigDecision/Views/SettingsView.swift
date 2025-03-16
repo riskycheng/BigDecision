@@ -31,6 +31,130 @@ struct WaveShape: Shape {
     }
 }
 
+// AI 特性介绍卡片视图
+struct AIFeatureCard: View {
+    let icon: String
+    let title: String
+    let description: String
+    let color: Color
+    @State private var appear = false
+    
+    var body: some View {
+        HStack(spacing: 15) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(color)
+                .frame(width: 32)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 17, weight: .semibold))
+                Text(description)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+        .opacity(appear ? 1 : 0)
+        .offset(y: appear ? 0 : 20)
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                appear = true
+            }
+        }
+    }
+}
+
+// AI 特性介绍对话框
+struct AIFeaturesView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @State private var selectedTab = 0
+    
+    private let features: [(icon: String, title: String, description: String, color: Color)] = [
+        (icon: "brain.head.profile", title: "智能分析", description: "运用先进的 AI 算法，全方位分析决策因素，帮助您做出最优选择", color: Color.blue),
+        (icon: "chart.bar.xaxis", title: "科学量化", description: "将定性因素转化为定量指标，使决策更加客观理性", color: Color.purple),
+        (icon: "scale.3d", title: "多维权衡", description: "综合考虑多个维度，平衡各方利弊，确保决策的全面性", color: Color("AppPrimary")),
+        (icon: "arrow.triangle.2.circlepath", title: "持续优化", description: "通过机器学习不断提升决策质量，使建议更加精准", color: Color.green),
+        (icon: "person.2", title: "个性化推荐", description: "根据您的决策历史和偏好，提供量身定制的建议", color: Color.orange)
+    ]
+    
+    var body: some View {
+        ZStack {
+            // 背景渐变
+            LinearGradient(
+                gradient: Gradient(colors: [Color("AppPrimary").opacity(0.8), Color("AppSecondary").opacity(0.8)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .edgesIgnoringSafeArea(.all)
+            .onTapGesture {
+                presentationMode.wrappedValue.dismiss()
+            }
+            
+            // 主要内容
+            VStack(spacing: 20) {
+                // 标题区域
+                VStack(spacing: 8) {
+                    Text("AI 智能决策")
+                        .font(.system(size: 24, weight: .bold))
+                    Text("让每个选择都更明智")
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 30)
+                
+                // 特性卡片列表
+                ScrollView {
+                    VStack(spacing: 15) {
+                        ForEach(features.indices, id: \.self) { index in
+                            AIFeatureCard(
+                                icon: features[index].icon,
+                                title: features[index].title,
+                                description: features[index].description,
+                                color: features[index].color
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 30)
+                }
+                
+                // 关闭按钮
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("了解更多")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(12)
+                        .shadow(color: Color("AppPrimary").opacity(0.3), radius: 15, y: 5)
+                }
+                .padding(.horizontal, 30)
+                .padding(.bottom, 30)
+            }
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemGroupedBackground))
+            .cornerRadius(24)
+            .shadow(color: Color.black.opacity(0.2), radius: 20, y: 10)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 40)
+        }
+    }
+}
+
 struct SettingsView: View {
     @AppStorage("userName") private var userName = ""
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
@@ -41,8 +165,15 @@ struct SettingsView: View {
     @State private var showingAboutSheet = false
     @State private var waveOffset: CGFloat = 0
     @State private var textIndex = 0
+    @State private var showingAIFeatures = false
     
-    private let texts = ["智能决策", "科学分析", "多方权衡"]
+    private let texts = [
+        "智慧助手",
+        "精准分析",
+        "科学决策",
+        "智能建议",
+        "全局洞察"
+    ]
     private let gradient = LinearGradient(
         gradient: Gradient(colors: [
             Color("AppPrimary").opacity(0.8),
@@ -118,18 +249,28 @@ struct SettingsView: View {
                                 )
                                 
                                 // 文字层
-                                HStack(spacing: 12) {
-                                    Text("AI")
-                                        .font(.system(size: 18, weight: .bold))
-                                    Text("·")
-                                        .font(.system(size: 18))
-                                        .opacity(0.5)
-                                    Text(texts[textIndex])
-                                        .font(.system(size: 18, weight: .medium))
-                                        .transition(.move(edge: .top).combined(with: .opacity))
-                                        .id(texts[textIndex]) // 确保每次文字改变时触发动画
+                                Button(action: {
+                                    showingAIFeatures = true
+                                }) {
+                                    HStack(spacing: 12) {
+                                        Text("AI")
+                                            .font(.system(size: 18, weight: .bold))
+                                        Text("·")
+                                            .font(.system(size: 18))
+                                            .opacity(0.5)
+                                        Text(texts[textIndex])
+                                            .font(.system(size: 18, weight: .medium))
+                                            .transition(
+                                                .asymmetric(
+                                                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                                                    removal: .move(edge: .top).combined(with: .opacity)
+                                                )
+                                            )
+                                            .id(texts[textIndex])
+                                            .animation(.easeInOut(duration: 0.3), value: textIndex)
+                                    }
+                                    .foregroundColor(Color("AppPrimary"))
                                 }
-                                .foregroundColor(Color("AppPrimary"))
                             }
                             .padding(.top, 6)
                             .padding(.bottom, 15)
@@ -327,6 +468,9 @@ struct SettingsView: View {
             .sheet(isPresented: $showingAboutSheet) {
                 AboutView()
             }
+            .sheet(isPresented: $showingAIFeatures) {
+                AIFeaturesView()
+            }
             .onAppear {
                 // 波浪动画
                 withAnimation(
@@ -338,8 +482,8 @@ struct SettingsView: View {
                 }
                 
                 // 文字切换动画
-                Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
-                    withAnimation(.easeInOut(duration: 0.5)) {
+                Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { _ in
+                    withAnimation(.easeInOut(duration: 0.3)) {
                         textIndex = (textIndex + 1) % texts.count
                     }
                 }
