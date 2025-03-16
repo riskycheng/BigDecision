@@ -29,13 +29,12 @@ struct HomeView: View {
                     )
                     .edgesIgnoringSafeArea(.top)
                     
-                    VStack(alignment: .leading, spacing: 6) {
-                        // 减小内部间距
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("你好，用户")
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
-                            .padding(.top, 25) // 减少顶部距离
+                            .padding(.top, 20)
                         
                         Text("需要帮你做决定吗？")
                             .font(.subheadline)
@@ -50,25 +49,24 @@ struct HomeView: View {
                             }
                             .font(.headline)
                             .foregroundColor(Color("AppPrimary"))
-                            .padding(.vertical, 12) // 保持按钮的垂直内边距
+                            .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
                             .background(Color.white)
                             .cornerRadius(12)
                             .shadow(color: Color.black.opacity(0.1), radius: 5)
                         }
-                        .padding(.top, 6) // 保持按钮上方的间距
-                        .padding(.bottom, 15) // 增加按钮下方的间距
+                        .padding(.top, 12)
                     }
                     .padding(.horizontal)
-                    .frame(maxWidth: .infinity) // 确保宽度填满
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(height: 150) // 保持整个顶部区域的高度
+                .frame(height: 160)
                 
                 ScrollView {
-                    VStack(spacing: 20) { // 减小区域之间的间距
+                    VStack(spacing: 15) { // 减小区域之间的间距
                         // 最近的决定区域
-                        VStack(spacing: 15) {
-                            // 标题区域 - 修改样式与间距
+                        VStack(spacing: 12) { // 减小内部间距
+                            // 标题区域
                             HStack {
                                 Text("最近的决定")
                                     .font(.title3)
@@ -85,8 +83,8 @@ struct HomeView: View {
                                 }
                             }
                             .padding(.horizontal)
-                            .padding(.top, 16)
-                            .padding(.bottom, 8)
+                            .padding(.top, 12) // 减少顶部内边距
+                            .padding(.bottom, 6) // 减少底部内边距
                             
                             // 内容区域
                             if decisionStore.decisions.isEmpty {
@@ -117,13 +115,12 @@ struct HomeView: View {
                                 .padding(.bottom, 16)
                             }
                         }
-                        .background(Color(.systemBackground)) // 使用系统背景色，与卡片形成对比
+                        .background(Color(.systemBackground))
                         .cornerRadius(15)
                         .padding(.horizontal, 5)
                         
                         // 快速操作区域
-                        VStack(spacing: 15) {
-                            // 标题 - 修改样式与间距，与"最近的决定"保持一致
+                        VStack(spacing: 12) { // 减小间距
                             HStack {
                                 Text("快速操作")
                                     .font(.title3)
@@ -131,11 +128,11 @@ struct HomeView: View {
                                 Spacer()
                             }
                             .padding(.horizontal)
-                            .padding(.top, 16)
-                            .padding(.bottom, 8)
+                            .padding(.top, 12) // 减少顶部内边距
+                            .padding(.bottom, 6) // 减少底部内边距
                             
-                            // 操作卡片 - 匹配附图中的样式
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            // 操作卡片
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) { // 减小网格间距
                                 ActionCard(icon: "shuffle", title: "随机决定", action: {
                                     randomDecision()
                                 })
@@ -150,16 +147,16 @@ struct HomeView: View {
                                 })
                             }
                             .padding(.horizontal)
-                            .padding(.bottom, 16)
+                            .padding(.bottom, 12) // 减少底部内边距
                         }
-                        .background(Color(.systemBackground)) // 使用系统背景色，与卡片形成对比
+                        .background(Color(.systemBackground))
                         .cornerRadius(15)
                         .padding(.horizontal, 5)
                         
                         // 底部空间
-                        Spacer(minLength: 60) // 减小底部空间
+                        Spacer(minLength: 20) // 减小底部空间
                     }
-                    .padding(.top, 10)
+                    .padding(.top, 8) // 减少顶部间距
                 }
             }
         }

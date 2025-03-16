@@ -73,12 +73,12 @@ struct HistoryView: View {
                         )
                         .edgesIgnoringSafeArea(.top)
                         
-                        VStack(alignment: .leading, spacing: 6) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("决策历史")
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
-                                .padding(.top, 25)
+                                .padding(.top, 20)
                             
                             Text("查找你的历史决策")
                                 .font(.subheadline)
@@ -86,13 +86,12 @@ struct HistoryView: View {
                             
                             // 搜索栏
                             SearchBar(text: $searchText, placeholder: "搜索决策...")
-                                .padding(.top, 6)
-                                .padding(.bottom, 15)
+                                .padding(.top, 12)
                         }
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(height: 150)
+                    .frame(height: 160)
                     
                     // 过滤器
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -108,7 +107,7 @@ struct HistoryView: View {
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 12)
                     }
                     
                     // 决策列表

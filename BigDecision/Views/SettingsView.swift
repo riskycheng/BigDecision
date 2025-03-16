@@ -212,12 +212,12 @@ struct SettingsView: View {
                         )
                         .edgesIgnoringSafeArea(.top)
                         
-                        VStack(alignment: .leading, spacing: 6) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("设置")
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
-                                .padding(.top, 25)
+                                .padding(.top, 20)
                             
                             Text("自定义你的使用体验")
                                 .font(.subheadline)
@@ -272,13 +272,12 @@ struct SettingsView: View {
                                     .foregroundColor(Color("AppPrimary"))
                                 }
                             }
-                            .padding(.top, 6)
-                            .padding(.bottom, 15)
+                            .padding(.top, 12)
                         }
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(height: 150)
+                    .frame(height: 160)
                     
                     ScrollView {
                         VStack(spacing: 16) {
