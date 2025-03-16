@@ -207,7 +207,7 @@ struct HistoryItemRow: View {
                     }
                     
                     // 置信度
-                    VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
                         Text("置信度")
                             .font(.system(size: 13))
                             .foregroundColor(.secondary)
@@ -216,27 +216,29 @@ struct HistoryItemRow: View {
                             .background(Color(.systemGray6))
                             .cornerRadius(4)
                         
-                        HStack(spacing: 8) {
-                            GeometryReader { geometry in
-                                ZStack(alignment: .leading) {
-                                    Rectangle()
-                                        .fill(Color("AppPrimary").opacity(0.2))
-                                        .frame(width: geometry.size.width, height: 6)
-                                        .cornerRadius(3)
-                                    
-                                    Rectangle()
-                                        .fill(Color("AppPrimary"))
-                                        .frame(width: geometry.size.width * result.confidence, height: 6)
-                                        .cornerRadius(3)
-                                }
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                Rectangle()
+                                    .fill(Color("AppPrimary").opacity(0.2))
+                                    .frame(width: geometry.size.width, height: 6)
+                                    .cornerRadius(3)
+                                
+                                Rectangle()
+                                    .fill(Color("AppPrimary"))
+                                    .frame(width: geometry.size.width * result.confidence, height: 6)
+                                    .cornerRadius(3)
                             }
-                            .frame(height: 6)
-                            
-                            Text("\(Int(result.confidence * 100))%")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(Color("AppPrimary"))
-                                .frame(width: 45, alignment: .trailing)
                         }
+                        .frame(height: 6)
+                        
+                        Text("\(Int(result.confidence * 100))%")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(Color("AppPrimary"))
+                            .frame(width: 45, alignment: .trailing)
+                    }
+                    .frame(height: 24)
+                    .alignmentGuide(.firstTextBaseline) { d in
+                        d[.bottom] - 8
                     }
                 }
             }
