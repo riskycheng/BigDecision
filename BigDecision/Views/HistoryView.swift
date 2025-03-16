@@ -21,9 +21,9 @@ enum DecisionFilter: String, CaseIterable {
 struct HistoryView: View {
     @EnvironmentObject var decisionStore: DecisionStore
     @State private var searchText = ""
-    @State private var showingFilterOptions = false
-    @State private var showingResetAlert = false
     @State private var selectedFilter: DecisionFilter = .all
+    @State private var selectedDecision: Decision? = nil
+    @State private var showingResultView = false
     
     var filteredDecisions: [Decision] {
         var decisions = decisionStore.decisions
@@ -69,71 +69,86 @@ struct HistoryView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // 搜索栏
-                SearchBar(text: $searchText, placeholder: "搜索决策...")
-                    .padding(.horizontal)
-                    .padding(.top, 10)
+            ZStack(alignment: .top) {
+                // 背景色
+                Color(.systemGroupedBackground)
+                    .edgesIgnoringSafeArea(.all)
                 
-                // 过滤器
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        ForEach(DecisionFilter.allCases, id: \.self) { filter in
-                            FilterButton(
-                                title: filter.title,
-                                isSelected: selectedFilter == filter,
-                                action: {
-                                    selectedFilter = filter
-                                }
-                            )
+                VStack(spacing: 0) {
+                    // 顶部渐变背景
+                    ZStack(alignment: .top) {
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .edgesIgnoringSafeArea(.top)
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("决策历史")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding(.top, 25)
+                            
+                            Text("查找你的历史决策")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.9))
+                            
+                            // 搜索栏
+                            SearchBar(text: $searchText, placeholder: "搜索决策...")
+                                .padding(.top, 6)
+                                .padding(.bottom, 15)
                         }
+                        .padding(.horizontal)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 10)
-                }
-                
-                // 决策列表
-                List {
-                    ForEach(filteredDecisions) { decision in
-                        NavigationLink(destination: 
-                            ResultView(decision: decision)
-                                .navigationBarTitleDisplayMode(.inline)
-                        ) {
-                            HistoryItemRow(decision: decision)
+                    .frame(height: 150)
+                    
+                    // 过滤器
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(DecisionFilter.allCases, id: \.self) { filter in
+                                FilterButton(
+                                    title: filter.title,
+                                    isSelected: selectedFilter == filter,
+                                    action: {
+                                        selectedFilter = filter
+                                    }
+                                )
+                            }
                         }
-                        .listRowInsets(EdgeInsets(top: 5, leading: 15, bottom: 5, trailing: 15))
+                        .padding(.horizontal)
+                        .padding(.vertical, 10)
                     }
-                    .onDelete(perform: deleteDecision)
+                    
+                    // 决策列表
+                    List {
+                        ForEach(filteredDecisions) { decision in
+                            Button(action: {
+                                selectedDecision = decision
+                                showingResultView = true
+                            }) {
+                                HistoryItemRow(decision: decision)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowBackground(Color.clear)
+                        }
+                        .onDelete(perform: deleteDecision)
+                    }
+                    .listStyle(PlainListStyle())
+                    .background(Color.clear)
                 }
-                .listStyle(PlainListStyle())
             }
-            .navigationTitle("决策历史")
-            .navigationBarItems(
-                trailing: EditButton()
-                    .foregroundColor(Color("AppPrimary"))
-            )
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingResetAlert = true
-                    }) {
-                        Image(systemName: "arrow.counterclockwise")
-                    }
+            .navigationBarHidden(true)
+            .sheet(isPresented: $showingResultView) {
+                if let decision = selectedDecision {
+                    ResultView(decision: decision)
                 }
-            }
-            .alert(isPresented: $showingResetAlert) {
-                Alert(
-                    title: Text("重置"),
-                    message: Text("确定要重置所有数据吗？"),
-                    primaryButton: .destructive(Text("重置")) {
-                        withAnimation {
-                            self.decisionStore.resetData()
-                        }
-                    },
-                    secondaryButton: .cancel()
-                )
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func deleteDecision(at offsets: IndexSet) {
@@ -148,55 +163,89 @@ struct HistoryItemRow: View {
     let decision: Decision
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
+            // 标题和日期
             HStack {
-                Image(systemName: decision.decisionType.icon)
-                    .foregroundColor(Color("AppPrimary"))
-                    .font(.system(size: 14))
-                    .frame(width: 20, height: 20)
-                    .background(Color("AppPrimary").opacity(0.1))
-                    .clipShape(Circle())
-                
-                Text(decision.title)
-                    .font(.headline)
+                HStack(spacing: 8) {
+                    Image(systemName: decision.decisionType.icon)
+                        .foregroundColor(Color("AppPrimary"))
+                        .font(.system(size: 16))
+                        .frame(width: 24, height: 24)
+                        .background(Color("AppPrimary").opacity(0.1))
+                        .clipShape(Circle())
+                    
+                    Text(decision.title)
+                        .font(.system(size: 17, weight: .semibold))
+                }
                 
                 Spacer()
                 
                 Text(formatDate(decision.createdAt))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            HStack {
-                Text(decision.optionA.title)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                Text("vs")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 5)
-                
-                Text(decision.optionB.title)
-                    .font(.subheadline)
+                    .font(.system(size: 13))
                     .foregroundColor(.secondary)
             }
             
             if let result = decision.result {
-                HStack {
-                    Spacer()
+                // 结果和置信度
+                VStack(alignment: .leading, spacing: 8) {
+                    // 结果
+                    HStack(spacing: 8) {
+                        Text("结果")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(4)
+                        
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.system(size: 13))
+                        
+                        Text(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
+                            .font(.system(size: 15, weight: .medium))
+                    }
                     
-                    Text("推荐：\(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)")
-                        .font(.caption)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color("AppPrimary"))
-                        .cornerRadius(20)
+                    // 置信度
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("置信度")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(4)
+                        
+                        HStack(spacing: 8) {
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    Rectangle()
+                                        .fill(Color("AppPrimary").opacity(0.2))
+                                        .frame(width: geometry.size.width, height: 6)
+                                        .cornerRadius(3)
+                                    
+                                    Rectangle()
+                                        .fill(Color("AppPrimary"))
+                                        .frame(width: geometry.size.width * result.confidence, height: 6)
+                                        .cornerRadius(3)
+                                }
+                            }
+                            .frame(height: 6)
+                            
+                            Text("\(Int(result.confidence * 100))%")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Color("AppPrimary"))
+                                .frame(width: 45, alignment: .trailing)
+                        }
+                    }
                 }
             }
         }
-        .padding(.vertical, 5)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
     }
     
     private func formatDate(_ date: Date) -> String {

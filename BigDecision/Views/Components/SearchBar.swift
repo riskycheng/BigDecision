@@ -7,7 +7,7 @@ struct SearchBar: View {
     var body: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundColor(.gray)
             
             TextField(placeholder, text: $text)
                 .foregroundColor(.primary)
@@ -17,16 +17,20 @@ struct SearchBar: View {
                     text = ""
                 }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.gray)
                 }
             }
         }
-        .padding(10)
-        .background(Color.gray.opacity(0.2))
-        .cornerRadius(10)
+        .padding(.vertical, 12)
+        .padding(.horizontal)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 5)
     }
 }
 
 #Preview {
     SearchBar(text: .constant(""), placeholder: "搜索...")
+        .padding()
+        .background(Color("AppPrimary"))
 } 
