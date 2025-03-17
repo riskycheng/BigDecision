@@ -37,8 +37,8 @@ struct HistoryView: View {
         if !searchText.isEmpty {
             decisions = decisions.filter { decision in
                 decision.title.localizedCaseInsensitiveContains(searchText) ||
-                decision.optionA.title.localizedCaseInsensitiveContains(searchText) ||
-                decision.optionB.title.localizedCaseInsensitiveContains(searchText)
+                decision.options[0].title.localizedCaseInsensitiveContains(searchText) ||
+                decision.options[1].title.localizedCaseInsensitiveContains(searchText)
             }
         }
         
@@ -187,7 +187,7 @@ struct HistoryItemRow: View {
                             .foregroundColor(.green)
                             .font(.system(size: 13))
                         
-                        Text(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
+                        Text(result.recommendation == "A" ? decision.options[0].title : decision.options[1].title)
                             .font(.system(size: 15, weight: .medium))
                     }
                     

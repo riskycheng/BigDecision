@@ -192,9 +192,12 @@ struct HomeView: View {
             showingRandomDecisionView = true
         } else {
             // 从预设决定中随机选择
-            let presetDecision = PresetDecision.random()
-            showingCreateView = true
-            // 这里需要通过环境变量或其他方式将预设决定传递给 CreateDecisionView
+            if let randomPreset = PresetDecision.presets.randomElement() {
+                let newDecision = randomPreset.toDecision()
+                decisionStore.addDecision(newDecision)
+                selectedDecision = newDecision
+                showingResultView = true
+            }
         }
     }
     

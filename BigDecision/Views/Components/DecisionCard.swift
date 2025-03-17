@@ -38,7 +38,7 @@ struct DecisionCard: View {
                                 .foregroundColor(Color.green)
                                 .font(.system(size: 12))
                             
-                            Text(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
+                            Text(result.recommendation == "A" ? decision.options[0].title : decision.options[1].title)
                                 .font(.subheadline)
                                 .foregroundColor(.primary)
                                 .lineLimit(1)
@@ -129,8 +129,10 @@ struct DecisionCard_Previews: PreviewProvider {
     static var previews: some View {
         DecisionCard(decision: Decision(
             title: "午餐吃什么",
-            optionA: Decision.Option(title: "麻辣烫", description: "辣味十足，暖胃"),
-            optionB: Decision.Option(title: "汉堡", description: "方便快捷，但不太健康"),
+            options: [
+                Option(title: "麻辣烫", description: "辣味十足，暖胃"),
+                Option(title: "汉堡", description: "方便快捷，但不太健康")
+            ],
             additionalInfo: "",
             decisionType: .other,
             importance: 3,
@@ -151,8 +153,10 @@ struct DecisionCard_Previews: PreviewProvider {
         
         DecisionCard(decision: Decision(
             title: "午餐吃什么",
-            optionA: Decision.Option(title: "麻辣烫", description: ""),
-            optionB: Decision.Option(title: "汉堡", description: ""),
+            options: [
+                Option(title: "麻辣烫", description: ""),
+                Option(title: "汉堡", description: "")
+            ],
             additionalInfo: "",
             decisionType: .other,
             importance: 3,

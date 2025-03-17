@@ -1,23 +1,27 @@
 import Foundation
 
+struct Option: Identifiable, Codable {
+    var id = UUID()
+    var title: String
+    var description: String
+}
+
 struct Decision: Identifiable, Codable {
-    let id: UUID
-    let title: String
-    let optionA: Option
-    let optionB: Option
-    let additionalInfo: String
-    let decisionType: DecisionType
-    let importance: Int // 1-5
-    let timeFrame: TimeFrame
+    var id = UUID()
+    var title: String
+    var options: [Option]
+    var additionalInfo: String
+    var decisionType: DecisionType
+    var importance: Int // 1-5
+    var timeFrame: TimeFrame
     var result: Result?
-    let createdAt: Date
     var isFavorited: Bool
+    var createdAt: Date
     
-    init(id: UUID = UUID(), title: String, optionA: Option, optionB: Option, additionalInfo: String, decisionType: DecisionType, importance: Int, timeFrame: TimeFrame, result: Result? = nil, createdAt: Date = Date(), isFavorited: Bool = false) {
+    init(id: UUID = UUID(), title: String, options: [Option], additionalInfo: String, decisionType: DecisionType, importance: Int, timeFrame: TimeFrame, result: Result? = nil, createdAt: Date = Date(), isFavorited: Bool = false) {
         self.id = id
         self.title = title
-        self.optionA = optionA
-        self.optionB = optionB
+        self.options = options
         self.additionalInfo = additionalInfo
         self.decisionType = decisionType
         self.importance = importance
@@ -25,11 +29,6 @@ struct Decision: Identifiable, Codable {
         self.result = result
         self.createdAt = createdAt
         self.isFavorited = isFavorited
-    }
-    
-    struct Option: Codable {
-        let title: String
-        let description: String
     }
     
     struct Result: Codable {
@@ -72,18 +71,5 @@ struct Decision: Identifiable, Codable {
         case week = "一周内"
         case month = "一个月内"
         case longTerm = "长期考虑"
-    }
-    
-    // 从预设决定创建新决定
-    static func fromPreset(_ preset: PresetDecision) -> Decision {
-        Decision(
-            title: preset.title,
-            optionA: preset.optionA,
-            optionB: preset.optionB,
-            additionalInfo: "",
-            decisionType: preset.decisionType,
-            importance: preset.importance,
-            timeFrame: preset.timeFrame
-        )
     }
 } 

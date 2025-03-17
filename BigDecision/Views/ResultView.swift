@@ -2,14 +2,13 @@ import SwiftUI
 import UIKit
 
 struct ResultView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @EnvironmentObject var decisionStore: DecisionStore
     let decision: Decision
     @State private var isFavorited: Bool
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
     @State private var exportImage: UIImage?
     @State private var showingExportedImage = false
+    @EnvironmentObject var decisionStore: DecisionStore
     
     init(decision: Decision) {
         self.decision = decision
@@ -17,201 +16,150 @@ struct ResultView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .bottom) {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        if let result = decision.result {
-                            // AI推荐结果卡片
-                            VStack(spacing: 15) {
-                                Text("AI推荐你选择")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(.white)
-                                
-                                Text(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal)
-                                
-                                HStack(spacing: 8) {
-                                    Text("推荐置信度")
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.white.opacity(0.9))
-                                    
-                                    GeometryReader { geometry in
-                                        ZStack(alignment: .leading) {
-                                            // 背景条
-                                            RoundedRectangle(cornerRadius: 2)
-                                                .fill(Color.white.opacity(0.3))
-                                                .frame(height: 4)
-                                            
-                                            // 进度条
-                                            RoundedRectangle(cornerRadius: 2)
-                                                .fill(Color.white)
-                                                .frame(width: geometry.size.width * result.confidence, height: 4)
-                                        }
-                                    }
-                                    .frame(height: 4)
-                                    .frame(width: 100)
-                                    
-                                    Text("\(Int(result.confidence * 100))%")
-                                        .font(.system(size: 15, weight: .medium))
-                                        .foregroundColor(.white)
-                                }
-                                .padding(.top, 5)
-                            }
-                            .padding(.vertical, 25)
-                            .padding(.horizontal)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(16)
-                            
-                            // 选项A分析
-                            VStack(alignment: .leading, spacing: 15) {
-                                Text("选项A: \(decision.optionA.title)")
-                                    .font(.system(size: 16, weight: .medium))
-                                
-                                Text("优势")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                
-                                ForEach(result.prosA.indices, id: \.self) { index in
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "plus.circle.fill")
-                                            .foregroundColor(.green)
-                                        Text(result.prosA[index])
-                                            .font(.system(size: 15))
-                                    }
-                                }
-                                
-                                Text("劣势")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 8)
-                                
-                                ForEach(result.consA.indices, id: \.self) { index in
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "minus.circle.fill")
-                                            .foregroundColor(.red)
-                                        Text(result.consA[index])
-                                            .font(.system(size: 15))
-                                    }
-                                }
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            
-                            // 选项B分析
-                            VStack(alignment: .leading, spacing: 15) {
-                                Text("选项B: \(decision.optionB.title)")
-                                    .font(.system(size: 16, weight: .medium))
-                                
-                                Text("优势")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                
-                                ForEach(result.prosB.indices, id: \.self) { index in
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "plus.circle.fill")
-                                            .foregroundColor(.green)
-                                        Text(result.prosB[index])
-                                            .font(.system(size: 15))
-                                    }
-                                }
-                                
-                                Text("劣势")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 8)
-                                
-                                ForEach(result.consB.indices, id: \.self) { index in
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "minus.circle.fill")
-                                            .foregroundColor(.red)
-                                        Text(result.consB[index])
-                                            .font(.system(size: 15))
-                                    }
-                                }
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            
-                            // 分析理由
-                            VStack(alignment: .leading, spacing: 15) {
-                                HStack {
-                                    Image(systemName: "magnifyingglass.circle.fill")
-                                        .foregroundColor(Color("AppPrimary"))
-                                    Text("分析理由")
-                                        .font(.headline)
-                                }
-                                
-                                Text(result.reasoning)
-                                    .font(.system(size: 15))
-                                    .foregroundColor(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .lineSpacing(4)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.white)
-                            .cornerRadius(12)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 80)
-                }
-                .background(Color(.systemGroupedBackground))
+        ScrollView {
+            VStack(spacing: 25) {
+                // 决策标题
+                Text(decision.title)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .padding(.top)
                 
-                // 底部操作按钮
-                VStack {
-                    HStack(spacing: 30) {
-                        ActionButton(icon: "square.and.arrow.up", title: "分享") {
-                            shareDecision()
-                        }
+                if let result = decision.result {
+                    // AI推荐结果卡片
+                    VStack(spacing: 15) {
+                        Text("AI推荐")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
                         
-                        ActionButton(icon: isFavorited ? "star.fill" : "star", title: "收藏") {
-                            toggleFavorite()
-                        }
+                        Text(getRecommendedOption(result.recommendation).title)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color("AppPrimary"))
                         
-                        ActionButton(icon: "arrow.clockwise", title: "重新分析") {
-                            presentationMode.wrappedValue.dismiss()
-                        }
+                        Text("置信度: \(Int(result.confidence * 100))%")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color("AppPrimary").opacity(0.1))
+                    .cornerRadius(15)
+                    
+                    // 分析理由
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("分析理由")
+                            .font(.headline)
                         
-                        ActionButton(icon: "doc.text", title: "导出") {
-                            showingExportOptions = true
+                        Text(result.reasoning)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(15)
+                    
+                    // 选项对比
+                    VStack(spacing: 20) {
+                        ForEach(decision.options) { option in
+                            OptionAnalysisCard(
+                                option: option,
+                                pros: option.id == decision.options[0].id ? result.prosA : result.prosB,
+                                cons: option.id == decision.options[0].id ? result.consA : result.consB
+                            )
                         }
                     }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal)
-                    .background(
-                        Color.white
-                            .shadow(color: Color.black.opacity(0.05), radius: 8, y: -4)
-                    )
+                    
+                    // 底部操作按钮栏
+                    VStack(spacing: 15) {
+                        Divider()
+                        
+                        HStack(spacing: 20) {
+                            // 收藏按钮
+                            Button(action: toggleFavorite) {
+                                VStack(spacing: 8) {
+                                    Image(systemName: isFavorited ? "star.fill" : "star")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(isFavorited ? .yellow : .gray)
+                                    Text("收藏")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            // 导出按钮
+                            Button(action: { showingExportOptions = true }) {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "square.and.arrow.down")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.gray)
+                                    Text("导出")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            // 分享按钮
+                            Button(action: { showingShareSheet = true }) {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "square.and.arrow.up")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.gray)
+                                    Text("分享")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            // 重新分析按钮
+                            Button(action: {
+                                var updatedDecision = decision
+                                updatedDecision.result = nil
+                                decisionStore.updateDecision(updatedDecision)
+                            }) {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "arrow.clockwise")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.gray)
+                                    Text("重新分析")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom)
+                    }
                 }
-                .background(Color.white)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle("分析结果")
-            .navigationBarItems(
-                trailing: Button("完成") {
-                    presentationMode.wrappedValue.dismiss()
+            .padding()
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 15) {
+                    Button(action: toggleFavorite) {
+                        Image(systemName: isFavorited ? "star.fill" : "star")
+                            .foregroundColor(isFavorited ? .yellow : .gray)
+                    }
+                    
+                    Button(action: { showingShareSheet = true }) {
+                        Image(systemName: "square.and.arrow.up")
+                            .foregroundColor(.gray)
+                    }
+                    
+                    Button(action: { showingExportOptions = true }) {
+                        Image(systemName: "square.and.arrow.down")
+                            .foregroundColor(.gray)
+                    }
                 }
-            )
+            }
         }
         .sheet(isPresented: $showingShareSheet) {
             if let result = decision.result {
-                ShareSheet(items: [generateShareText(decision: decision, result: result)])
+                ShareSheet(items: [generateShareText()])
             }
         }
         .alert(isPresented: $showingExportOptions) {
@@ -234,80 +182,235 @@ struct ResultView: View {
         }
     }
     
+    private func getRecommendedOption(_ recommendation: String) -> Option {
+        recommendation == "A" ? decision.options[0] : decision.options[1]
+    }
+    
     private func toggleFavorite() {
         isFavorited.toggle()
         var updatedDecision = decision
         updatedDecision.isFavorited = isFavorited
         decisionStore.updateDecision(updatedDecision)
         
-        // 添加触觉反馈
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+        let feedbackGenerator = UINotificationFeedbackGenerator()
+        feedbackGenerator.notificationOccurred(.success)
     }
     
-    private func shareDecision() {
-        guard let result = decision.result else { return }
+    private func generateShareText() -> String {
+        guard let result = decision.result else { return "" }
         
-        let text = """
+        let recommendedOption = getRecommendedOption(result.recommendation)
+        
+        return """
+        我使用"大决定"分析了一个决策:
+        
         决策: \(decision.title)
+        选项: \(decision.options.map { $0.title }.joined(separator: " vs "))
         
-        选项A: \(decision.optionA.title)
-        选项B: \(decision.optionB.title)
-        
-        AI推荐: \(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
+        AI推荐: \(recommendedOption.title)
         置信度: \(Int(result.confidence * 100))%
         
         分析理由: \(result.reasoning)
         """
-        
-        let activityVC = UIActivityViewController(
-            activityItems: [text],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootVC = window.rootViewController {
-            rootVC.present(activityVC, animated: true)
-        }
-    }
-    
-    private func generateShareText(decision: Decision, result: Decision.Result) -> String {
-        let text = """
-        决策: \(decision.title)
-        
-        选项A: \(decision.optionA.title)
-        选项B: \(decision.optionB.title)
-        
-        AI推荐: \(result.recommendation == "A" ? decision.optionA.title : decision.optionB.title)
-        置信度: \(Int(result.confidence * 100))%
-        
-        分析理由: \(result.reasoning)
-        """
-        return text
     }
     
     private func exportDecisionAsImage() -> UIImage? {
-        // Implementation of exportDecisionAsImage method
-        return nil // Placeholder return, actual implementation needed
+        guard let result = decision.result else { return nil }
+        let recommendedOption = getRecommendedOption(result.recommendation)
+        let exportView = ExportReportView(
+            title: decision.title,
+            options: decision.options,
+            recommendedOption: recommendedOption,
+            confidence: result.confidence,
+            reasoning: result.reasoning
+        )
+        
+        let controller = UIHostingController(rootView: exportView)
+        controller.view.frame = CGRect(x: 0, y: 0, width: 350, height: 500)
+        controller.view.layoutIfNeeded()
+        
+        UIGraphicsBeginImageContextWithOptions(controller.view.bounds.size, false, 0)
+        controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return image
     }
 }
 
-struct ActionButton: View {
-    let icon: String
+struct ExportReportView: View {
     let title: String
-    let action: () -> Void
+    let options: [Option]
+    let recommendedOption: Option
+    let confidence: Double
+    let reasoning: String
     
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                Text(title)
-                    .font(.system(size: 12))
+        VStack(spacing: 15) {
+            Text("决策分析报告")
+                .font(.title)
+                .fontWeight(.bold)
+                .padding(.top)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("决策: \(title)")
+                    .font(.headline)
+                    .padding(.bottom, 5)
+                
+                ForEach(options) { option in
+                    Text("选项\(option.id == options[0].id ? "A" : "B"): \(option.title)")
+                }
+                .padding(.bottom, 5)
+                
+                Text("AI推荐: \(recommendedOption.title)")
+                    .fontWeight(.bold)
+                
+                Text("置信度: \(Int(confidence * 100))%")
+                    .padding(.bottom, 5)
+                
+                Text("分析理由:")
+                    .fontWeight(.bold)
+                
+                Text(reasoning)
+                    .font(.body)
+                    .lineLimit(10)
             }
-            .foregroundColor(Color("AppPrimary"))
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(10)
+            
+            Spacer()
+            
+            Text("由\"大决定\"App生成")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.bottom)
+        }
+        .padding()
+        .frame(width: 350, height: 500)
+        .background(Color.white)
+    }
+}
+
+struct OptionAnalysisCard: View {
+    let option: Option
+    let pros: [String]
+    let cons: [String]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text(option.title)
+                .font(.headline)
+            
+            if !option.description.isEmpty {
+                Text(option.description)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                if !pros.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("优点")
+                            .font(.subheadline)
+                            .foregroundColor(.green)
+                        
+                        ForEach(pros, id: \.self) { pro in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(.green)
+                                    .font(.system(size: 14))
+                                
+                                Text(pro)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+                
+                if !cons.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("缺点")
+                            .font(.subheadline)
+                            .foregroundColor(.red)
+                        
+                        ForEach(cons, id: \.self) { con in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundColor(.red)
+                                    .font(.system(size: 14))
+                                
+                                Text(con)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.systemBackground))
+        .cornerRadius(15)
+    }
+}
+
+// 系统分享视图
+struct ShareSheet: UIViewControllerRepresentable {
+    var items: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// 导出图片预览视图
+struct ExportImageView: View {
+    let image: UIImage
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("决策分析图片")
+                .font(.system(size: 17, weight: .semibold))
+                .padding(.top)
+            
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .padding()
+            
+            HStack(spacing: 20) {
+                Button(action: {
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                    let feedbackGenerator = UINotificationFeedbackGenerator()
+                    feedbackGenerator.notificationOccurred(.success)
+                }) {
+                    Text("保存到相册")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 25)
+                        .padding(.vertical, 12)
+                        .background(Color("AppPrimary"))
+                        .cornerRadius(10)
+                }
+                
+                Button(action: onDismiss) {
+                    Text("关闭")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 25)
+                        .padding(.vertical, 12)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(10)
+                }
+            }
+            .padding(.bottom)
         }
     }
 }
@@ -315,8 +418,10 @@ struct ActionButton: View {
 #Preview {
     let sampleDecision = Decision(
         title: "是否换工作？",
-        optionA: Decision.Option(title: "留在现公司", description: "稳定但发展有限"),
-        optionB: Decision.Option(title: "接受新offer", description: "机会更多但风险更大"),
+        options: [
+            Option(title: "留在现公司", description: "稳定但发展有限"),
+            Option(title: "接受新offer", description: "机会更多但风险更大")
+        ],
         additionalInfo: "我在现公司工作了3年，薪资稳定但晋升空间有限。新公司提供的薪资高30%，但工作强度可能更大。",
         decisionType: .work,
         importance: 4,
@@ -333,5 +438,5 @@ struct ActionButton: View {
         createdAt: Date()
     )
     
-    return ResultView(decision: sampleDecision)
+    ResultView(decision: sampleDecision)
 } 
