@@ -158,9 +158,7 @@ struct ResultView: View {
             }
         }
         .sheet(isPresented: $showingShareSheet) {
-            if let result = decision.result {
-                ShareSheet(items: [generateShareText()])
-            }
+            ShareSheet(items: [generateShareText()])
         }
         .alert(isPresented: $showingExportOptions) {
             Alert(

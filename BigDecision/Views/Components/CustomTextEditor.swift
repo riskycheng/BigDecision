@@ -17,27 +17,33 @@ struct CustomTextEditor: View {
         ZStack(alignment: .topLeading) {
             if text.isEmpty {
                 Text(placeholder)
-                    .foregroundColor(.gray)
-                    .padding(.top, 8)
-                    .padding(.leading, 5)
+                    .foregroundColor(Color(.placeholderText))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
             }
             
             TextEditor(text: $text)
                 .frame(minHeight: minHeight, maxHeight: maxHeight)
                 .scrollContentBackground(.hidden)
-                .background(Color(.systemBackground))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
         }
-        .padding(8)
         .background(Color(.systemBackground))
-        .cornerRadius(10)
+        .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color(.systemGray5), lineWidth: 1)
         )
+        .shadow(color: Color.black.opacity(0.03), radius: 8, y: 4)
     }
 }
 
 #Preview {
-    CustomTextEditor(placeholder: "请输入内容...", text: .constant(""))
-        .padding()
+    CustomTextEditor(
+        placeholder: "请输入内容...", 
+        text: .constant(""),
+        minHeight: 100,
+        maxHeight: 200
+    )
+    .padding()
 } 
