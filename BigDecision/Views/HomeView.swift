@@ -275,7 +275,7 @@ struct CompactHistoryItemRow: View {
                 
                 Spacer()
                 
-                Text(formatDate(decision.createdAt))
+                Text(decision.createdAt.formatRelativeDate())
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
             }
@@ -339,38 +339,6 @@ struct CompactHistoryItemRow: View {
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let calendar = Calendar.current
-        let now = Date()
-        
-        // 检查是否是今天
-        if calendar.isDateInToday(date) {
-            return "今天"
-        }
-        
-        // 检查是否是昨天
-        if calendar.isDateInYesterday(date) {
-            return "昨天"
-        }
-        
-        // 计算与今天的天数差
-        if let days = calendar.dateComponents([.day], from: date, to: now).day, days < 7 {
-            return "\(days)天前"
-        }
-        
-        // 检查是否是今年
-        let isThisYear = calendar.isDate(date, equalTo: now, toGranularity: .year)
-        
-        let formatter = DateFormatter()
-        if isThisYear {
-            formatter.dateFormat = "M月d日"
-        } else {
-            formatter.dateFormat = "yyyy年M月d日"
-        }
-        
-        return formatter.string(from: date)
     }
 }
 

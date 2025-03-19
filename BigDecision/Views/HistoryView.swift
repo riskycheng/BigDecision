@@ -170,11 +170,16 @@ struct HistoryItemRow: View {
                     
                     Text(decision.title)
                         .font(.system(size: 17, weight: .semibold))
+                        .lineLimit(1)
+                    
+                    Image(systemName: "chevron.forward")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()
                 
-                Text(formatDate(decision.createdAt))
+                Text(decision.createdAt.formatRelativeDate())
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
             }
@@ -202,21 +207,18 @@ struct HistoryItemRow: View {
                         
                         Text(result.recommendation == "A" ? decision.options[0].title : decision.options[1].title)
                             .font(.system(size: 15, weight: .medium))
+                            .lineLimit(1)
+                        
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color("AppPrimary").opacity(0.6))
                     }
                     
                     // 置信度
                     HStack(spacing: 8) {
-                        Text("置信度")
-                            .font(.system(size: 13))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            #if canImport(UIKit)
-                            .background(Color(UIColor.systemGray6))
-                            #else
-                            .background(Color.gray.opacity(0.1))
-                            #endif
-                            .cornerRadius(4)
+                        Text("\(Int(result.confidence * 100))%")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(Color("AppPrimary"))
                         
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
@@ -232,15 +234,6 @@ struct HistoryItemRow: View {
                             }
                         }
                         .frame(height: 6)
-                        
-                        Text("\(Int(result.confidence * 100))%")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color("AppPrimary"))
-                            .frame(width: 45, alignment: .trailing)
-                    }
-                    .frame(height: 24)
-                    .alignmentGuide(.firstTextBaseline) { d in
-                        d[.bottom] - 8
                     }
                 }
             }
@@ -250,12 +243,6 @@ struct HistoryItemRow: View {
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年MM月dd日"
-        return formatter.string(from: date)
     }
 }
 
@@ -282,6 +269,40 @@ struct FilterButton: View {
             .foregroundColor(isSelected ? .white : .primary)
             .cornerRadius(20)
         }
+    }
+}
+
+extension Date {
+    func formatRelativeDate() -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // 检查是否是今天
+        if calendar.isDateInToday(self) {
+            return "今天"
+        }
+        
+        // 检查是否是昨天
+        if calendar.isDateInYesterday(self) {
+            return "昨天"
+        }
+        
+        // 计算与今天的天数差
+        if let days = calendar.dateComponents([.day], from: self, to: now).day, days < 7 {
+            return "\(days)天前"
+        }
+        
+        // 检查是否是今年
+        let isThisYear = calendar.isDate(self, equalTo: now, toGranularity: .year)
+        
+        let formatter = DateFormatter()
+        if isThisYear {
+            formatter.dateFormat = "M月d日"
+        } else {
+            formatter.dateFormat = "yyyy年M月d日"
+        }
+        
+        return formatter.string(from: self)
     }
 }
 
