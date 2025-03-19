@@ -67,18 +67,9 @@ struct CreateDecisionView: View {
                 VStack(spacing: 0) {
                     // 顶部导航栏
                     HStack {
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundColor(.primary)
-                                .frame(width: 32, height: 32)
-                                #if canImport(UIKit)
-                                .background(Color(UIColor.systemGray6))
-                                #else
-                                .background(Color.gray.opacity(0.1))
-                                #endif
-                                .clipShape(Circle())
-                        }
+                        // 占位视图保持对称
+                        Color.clear
+                            .frame(width: 32, height: 32)
                         
                         Spacer()
                         

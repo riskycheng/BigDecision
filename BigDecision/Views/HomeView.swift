@@ -94,11 +94,11 @@ struct HomeView: View {
                             .padding(.bottom, 6) // 减少底部内边距
                             
                             // 内容区域
-                            if decisionStore.decisions.isEmpty {
+                            if decisionStore.decisions.filter({ $0.result != nil }).isEmpty {
                                 // 空状态视图 - 移除背景色，使用外部容器的背景色
                                 EmptyStateView(
                                     icon: "list.bullet.clipboard",
-                                    message: "你还没有做过任何决定",
+                                    message: "你还没有完成任何决定",
                                     buttonText: "创建第一个决定",
                                     action: { showingCreateView = true }
                                 )
@@ -108,7 +108,11 @@ struct HomeView: View {
                             } else {
                                 // 决定卡片列表
                                 VStack(spacing: 10) {
-                                    ForEach(Array(decisionStore.decisions.prefix(2).enumerated()), id: \.element.id) { index, decision in
+                                    ForEach(Array(decisionStore.decisions
+                                        .filter { $0.result != nil }
+                                        .sorted(by: { $0.createdAt > $1.createdAt })
+                                        .prefix(2)
+                                        .enumerated()), id: \.element.id) { index, decision in
                                         Button(action: {
                                             selectedDecision = decision
                                             showingResultView = true
