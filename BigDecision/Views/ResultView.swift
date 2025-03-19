@@ -1,12 +1,16 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 struct ResultView: View {
     let decision: Decision
     @State private var isFavorited: Bool
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
+    #if canImport(UIKit)
     @State private var exportImage: UIImage?
+    #endif
     @State private var showingExportedImage = false
     @EnvironmentObject var decisionStore: DecisionStore
     
@@ -58,17 +62,24 @@ struct ResultView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemBackground))
+                    #if canImport(UIKit)
+                    .background(Color(UIColor.systemBackground))
+                    #else
+                    .background(Color.white)
+                    #endif
                     .cornerRadius(15)
                     
-                    // 选项对比
-                    VStack(spacing: 20) {
-                        ForEach(decision.options) { option in
-                            OptionAnalysisCard(
-                                option: option,
-                                pros: option.id == decision.options[0].id ? result.prosA : result.prosB,
-                                cons: option.id == decision.options[0].id ? result.consA : result.consB
-                            )
+                    // 确保至少有两个选项
+                    if decision.options.count >= 2 {
+                        // 选项对比
+                        VStack(spacing: 20) {
+                            ForEach(decision.options) { option in
+                                OptionAnalysisCard(
+                                    option: option,
+                                    pros: option.id == decision.options[0].id ? result.prosA : result.prosB,
+                                    cons: option.id == decision.options[0].id ? result.consA : result.consB
+                                )
+                            }
                         }
                     }
                     
@@ -90,6 +101,7 @@ struct ResultView: View {
                             }
                             
                             // 导出按钮
+                            #if canImport(UIKit)
                             Button(action: { showingExportOptions = true }) {
                                 VStack(spacing: 8) {
                                     Image(systemName: "square.and.arrow.down")
@@ -100,8 +112,10 @@ struct ResultView: View {
                                         .foregroundColor(.secondary)
                                 }
                             }
+                            #endif
                             
                             // 分享按钮
+                            #if canImport(UIKit)
                             Button(action: { showingShareSheet = true }) {
                                 VStack(spacing: 8) {
                                     Image(systemName: "square.and.arrow.up")
@@ -112,6 +126,7 @@ struct ResultView: View {
                                         .foregroundColor(.secondary)
                                 }
                             }
+                            #endif
                             
                             // 重新分析按钮
                             Button(action: {
@@ -145,6 +160,7 @@ struct ResultView: View {
                             .foregroundColor(isFavorited ? .yellow : .gray)
                     }
                     
+                    #if canImport(UIKit)
                     Button(action: { showingShareSheet = true }) {
                         Image(systemName: "square.and.arrow.up")
                             .foregroundColor(.gray)
@@ -154,9 +170,11 @@ struct ResultView: View {
                         Image(systemName: "square.and.arrow.down")
                             .foregroundColor(.gray)
                     }
+                    #endif
                 }
             }
         }
+        #if canImport(UIKit)
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(items: [generateShareText()])
         }
@@ -178,10 +196,16 @@ struct ResultView: View {
                 ExportImageView(image: image, onDismiss: { showingExportedImage = false })
             }
         }
+        #endif
     }
     
     private func getRecommendedOption(_ recommendation: String) -> Option {
-        recommendation == "A" ? decision.options[0] : decision.options[1]
+        // 确保数组有足够的元素
+        guard decision.options.count >= 2 else {
+            return decision.options.first ?? Option(title: "未知选项", description: "")
+        }
+        
+        return recommendation == "A" ? decision.options[0] : decision.options[1]
     }
     
     private func toggleFavorite() {
@@ -190,8 +214,10 @@ struct ResultView: View {
         updatedDecision.isFavorited = isFavorited
         decisionStore.updateDecision(updatedDecision)
         
+        #if canImport(UIKit)
         let feedbackGenerator = UINotificationFeedbackGenerator()
         feedbackGenerator.notificationOccurred(.success)
+        #endif
     }
     
     private func generateShareText() -> String {
@@ -212,8 +238,10 @@ struct ResultView: View {
         """
     }
     
+    #if canImport(UIKit)
     private func exportDecisionAsImage() -> UIImage? {
-        guard let result = decision.result else { return nil }
+        guard let result = decision.result, decision.options.count >= 2 else { return nil }
+        
         let recommendedOption = getRecommendedOption(result.recommendation)
         let exportView = ExportReportView(
             title: decision.title,
@@ -234,6 +262,7 @@ struct ResultView: View {
         
         return image
     }
+    #endif
 }
 
 struct ExportReportView: View {
@@ -255,8 +284,8 @@ struct ExportReportView: View {
                     .font(.headline)
                     .padding(.bottom, 5)
                 
-                ForEach(options) { option in
-                    Text("选项\(option.id == options[0].id ? "A" : "B"): \(option.title)")
+                ForEach(0..<options.count, id: \.self) { index in
+                    Text("选项\(index == 0 ? "A" : "B"): \(options[index].title)")
                 }
                 .padding(.bottom, 5)
                 
@@ -351,11 +380,16 @@ struct OptionAnalysisCard: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
+        #if canImport(UIKit)
+        .background(Color(UIColor.systemBackground))
+        #else
+        .background(Color.white)
+        #endif
         .cornerRadius(15)
     }
 }
 
+#if canImport(UIKit)
 // 系统分享视图
 struct ShareSheet: UIViewControllerRepresentable {
     var items: [Any]
@@ -412,6 +446,7 @@ struct ExportImageView: View {
         }
     }
 }
+#endif
 
 #Preview {
     let sampleDecision = Decision(

@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 // 决策过滤器枚举
 enum DecisionFilter: String, CaseIterable {
@@ -60,8 +62,13 @@ struct HistoryView: View {
         NavigationView {
             ZStack(alignment: .top) {
                 // 背景色
-                Color(.systemGroupedBackground)
-                    .edgesIgnoringSafeArea(.all)
+                #if canImport(UIKit)
+                Color(UIColor.systemGroupedBackground)
+                    .ignoresSafeArea()
+                #else
+                Color.gray.opacity(0.1)
+                    .ignoresSafeArea()
+                #endif
                 
                 VStack(spacing: 0) {
                     // 顶部渐变背景
@@ -71,7 +78,7 @@ struct HistoryView: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
-                        .edgesIgnoringSafeArea(.top)
+                        .ignoresSafeArea()
                         
                         VStack(alignment: .leading, spacing: 8) {
                             Text("决策历史")
@@ -128,7 +135,9 @@ struct HistoryView: View {
                     .background(Color.clear)
                 }
             }
+            #if os(iOS)
             .navigationBarHidden(true)
+            #endif
             .sheet(item: $selectedDecision) { decision in
                 ResultView(decision: decision)
             }
@@ -180,7 +189,11 @@ struct HistoryItemRow: View {
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color(.systemGray6))
+                            #if canImport(UIKit)
+                            .background(Color(UIColor.systemGray6))
+                            #else
+                            .background(Color.gray.opacity(0.1))
+                            #endif
                             .cornerRadius(4)
                         
                         Image(systemName: "checkmark.circle.fill")
@@ -198,7 +211,11 @@ struct HistoryItemRow: View {
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color(.systemGray6))
+                            #if canImport(UIKit)
+                            .background(Color(UIColor.systemGray6))
+                            #else
+                            .background(Color.gray.opacity(0.1))
+                            #endif
                             .cornerRadius(4)
                         
                         GeometryReader { geometry in

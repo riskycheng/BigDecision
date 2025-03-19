@@ -77,8 +77,13 @@ struct StatsView: View {
         NavigationView {
             ZStack(alignment: .top) {
                 // 背景色
-                Color(.systemGroupedBackground)
-                    .edgesIgnoringSafeArea(.all)
+                #if canImport(UIKit)
+                Color(UIColor.systemGroupedBackground)
+                    .ignoresSafeArea()
+                #else
+                Color.gray.opacity(0.1)
+                    .ignoresSafeArea()
+                #endif
                 
                 VStack(spacing: 0) {
                     // 顶部渐变背景
@@ -88,7 +93,7 @@ struct StatsView: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
-                        .edgesIgnoringSafeArea(.top)
+                        .ignoresSafeArea()
                         
                         VStack(alignment: .leading, spacing: 6) {
                             Text("决策统计")

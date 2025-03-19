@@ -36,6 +36,10 @@ struct ActionCard_Previews: PreviewProvider {
         ActionCard(icon: "shuffle", title: "随机决定", action: {})
             .previewLayout(.sizeThatFits)
             .padding()
-            .background(Color(.systemGroupedBackground))
+            #if canImport(UIKit)
+            .background(Color(UIColor.systemGroupedBackground))
+            #else
+            .background(Color.gray.opacity(0.1))
+            #endif
     }
 } 

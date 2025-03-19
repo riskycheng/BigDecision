@@ -35,11 +35,19 @@ struct SecondaryButton: View {
                 .foregroundColor(.primary)
                 .frame(maxWidth: .infinity)
                 .frame(height: 54)
-                .background(Color(.systemBackground))
+                #if canImport(UIKit)
+                .background(Color(UIColor.systemBackground))
+                #else
+                .background(Color.white)
+                #endif
                 .cornerRadius(27)
                 .overlay(
                     RoundedRectangle(cornerRadius: 27)
-                        .stroke(Color(.systemGray4), lineWidth: 1)
+                        #if canImport(UIKit)
+                        .stroke(Color(UIColor.systemGray4), lineWidth: 1)
+                        #else
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        #endif
                 )
         }
     }

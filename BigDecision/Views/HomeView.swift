@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 struct HomeView: View {
     @EnvironmentObject var decisionStore: DecisionStore
@@ -15,8 +17,13 @@ struct HomeView: View {
     var body: some View {
         ZStack(alignment: .top) {
             // 背景色
-            Color(.systemGroupedBackground)
-                .edgesIgnoringSafeArea(.all)
+            #if canImport(UIKit)
+            Color(UIColor.systemGroupedBackground)
+                .ignoresSafeArea()
+            #else
+            Color.gray.opacity(0.1)
+                .ignoresSafeArea()
+            #endif
             
             // 主内容
             VStack(spacing: 0) {
@@ -27,7 +34,7 @@ struct HomeView: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
-                    .edgesIgnoringSafeArea(.top)
+                    .ignoresSafeArea()
                     
                     VStack(alignment: .leading, spacing: 8) {
                         Text("你好，用户")
@@ -115,7 +122,11 @@ struct HomeView: View {
                                 .padding(.bottom, 16)
                             }
                         }
-                        .background(Color(.systemBackground))
+                        #if canImport(UIKit)
+                        .background(Color(UIColor.systemBackground))
+                        #else
+                        .background(Color.white)
+                        #endif
                         .cornerRadius(15)
                         .padding(.horizontal, 5)
                         
@@ -149,7 +160,11 @@ struct HomeView: View {
                             .padding(.horizontal)
                             .padding(.bottom, 12) // 减少底部内边距
                         }
-                        .background(Color(.systemBackground))
+                        #if canImport(UIKit)
+                        .background(Color(UIColor.systemBackground))
+                        #else
+                        .background(Color.white)
+                        #endif
                         .cornerRadius(15)
                         .padding(.horizontal, 5)
                         
@@ -201,6 +216,7 @@ struct HomeView: View {
         }
     }
     
+    #if canImport(UIKit)
     func shareApp() {
         let text = """
         我正在使用"大决定"App来帮助我做出更明智的选择！
@@ -221,6 +237,12 @@ struct HomeView: View {
             rootVC.present(activityVC, animated: true)
         }
     }
+    #else
+    func shareApp() {
+        // 非iOS平台分享功能的替代实现
+        print("在非iOS平台上分享功能尚未实现")
+    }
+    #endif
 }
 
 #Preview {

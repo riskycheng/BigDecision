@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct ContentView: View {
     @State private var selectedTab = 0
@@ -36,6 +39,7 @@ struct ContentView: View {
                         .tag(2)
                 }
                 .accentColor(Color("AppPrimary"))
+                #if canImport(UIKit)
                 .onAppear {
                     let tabBarAppearance = UITabBarAppearance()
                     tabBarAppearance.configureWithOpaqueBackground()
@@ -48,6 +52,7 @@ struct ContentView: View {
                         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
                     }
                 }
+                #endif
             }
         }
         .onAppear {

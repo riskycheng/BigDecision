@@ -17,7 +17,11 @@ struct CustomTextEditor: View {
         ZStack(alignment: .topLeading) {
             if text.isEmpty {
                 Text(placeholder)
-                    .foregroundColor(Color(.placeholderText))
+                    #if canImport(UIKit)
+                    .foregroundColor(Color(UIColor.placeholderText))
+                    #else
+                    .foregroundColor(Color.gray)
+                    #endif
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
             }
@@ -28,11 +32,19 @@ struct CustomTextEditor: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
         }
-        .background(Color(.systemBackground))
+        #if canImport(UIKit)
+        .background(Color(UIColor.systemBackground))
+        #else
+        .background(Color.white)
+        #endif
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color(.systemGray5), lineWidth: 1)
+                #if canImport(UIKit)
+                .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                #else
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                #endif
         )
         .shadow(color: Color.black.opacity(0.03), radius: 8, y: 4)
     }

@@ -21,7 +21,11 @@ public struct CustomTextField: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal)
-        .background(Color(.systemBackground))
+        #if canImport(UIKit)
+        .background(Color(UIColor.systemBackground))
+        #else
+        .background(Color.white)
+        #endif
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
     }
@@ -30,5 +34,9 @@ public struct CustomTextField: View {
 #Preview {
     CustomTextField(title: "输入文本", text: .constant(""), icon: "text.alignleft")
         .padding()
-        .background(Color(.systemGroupedBackground))
+        #if canImport(UIKit)
+        .background(Color(UIColor.systemGroupedBackground))
+        #else
+        .background(Color.gray.opacity(0.1))
+        #endif
 } 

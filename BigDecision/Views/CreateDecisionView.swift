@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct CreateDecisionView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -57,8 +56,13 @@ struct CreateDecisionView: View {
         NavigationView {
             ZStack {
                 // 背景色
-                Color(.systemBackground)
-                    .edgesIgnoringSafeArea(.all)
+                #if canImport(UIKit)
+                Color(UIColor.systemBackground)
+                    .ignoresSafeArea()
+                #else
+                Color.white
+                    .ignoresSafeArea()
+                #endif
                 
                 VStack(spacing: 0) {
                     // 顶部导航栏
@@ -68,7 +72,11 @@ struct CreateDecisionView: View {
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(.primary)
                                 .frame(width: 32, height: 32)
-                                .background(Color(.systemGray6))
+                                #if canImport(UIKit)
+                                .background(Color(UIColor.systemGray6))
+                                #else
+                                .background(Color.gray.opacity(0.1))
+                                #endif
                                 .clipShape(Circle())
                         }
                         
@@ -76,7 +84,7 @@ struct CreateDecisionView: View {
                         
                         // 进度指示器
                         StepProgressBar(currentStep: currentStep)
-                            .frame(width: 200)
+                            .frame(width: 250)
                         
                         Spacer()
                         
@@ -85,7 +93,8 @@ struct CreateDecisionView: View {
                             .frame(width: 32, height: 32)
                     }
                     .padding(.horizontal)
-                    .padding(.top, 8)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
                     
                     ScrollView {
                         VStack(spacing: 25) {
@@ -115,12 +124,22 @@ struct CreateDecisionView: View {
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 12)
                         }
-                        .background(Color(.systemBackground))
+                        #if canImport(UIKit)
+                        .background(Color(UIColor.systemBackground))
+                        #else
+                        .background(Color.white)
+                        #endif
                     }
                 }
             }
+            #if os(iOS)
             .navigationBarHidden(true)
+            #endif
         }
+        #if os(iOS)
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+        #endif
     }
     
     private var navigationTitle: String {
@@ -165,28 +184,67 @@ struct CreateDecisionView: View {
                 }
             }) {
                 ZStack {
+                    // 外层阴影
                     Circle()
-                        .fill(Color(hex: "FFF5EA"))
+                        .fill(Color.white)
                         .frame(width: 240, height: 240)
-                        .shadow(color: Color.black.opacity(0.05), radius: 10)
+                        .shadow(color: Color(hex: "4158D0").opacity(0.1), radius: 15, x: 0, y: 8)
                     
-                    VStack(spacing: 8) {
+                    // 渐变背景
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(
+                                    colors: [
+                                        Color(hex: "EEF2FF"),
+                                        Color(hex: "F6F0FF")
+                                    ]
+                                ),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 220, height: 220)
+                    
+                    // 发光边框
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(
+                                    colors: [
+                                        Color(hex: "4158D0").opacity(0.3),
+                                        Color(hex: "C850C0").opacity(0.3),
+                                        Color(hex: "4158D0").opacity(0.3)
+                                    ]
+                                ),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                        .frame(width: 220, height: 220)
+                        .blur(radius: 1)
+                    
+                    // 内容
+                    VStack(spacing: 12) {
                         if title.isEmpty {
-                            Image(systemName: "pencil.circle")
-                                .font(.system(size: 30))
-                                .foregroundColor(Color(.systemGray2))
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(Color(hex: "4158D0"))
+                                .symbolRenderingMode(.hierarchical)
+                            
                             Text("在这里输入您的困惑...")
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(.systemGray2))
+                                .foregroundColor(Color(hex: "4158D0").opacity(0.6))
                                 .multilineTextAlignment(.center)
                                 .frame(width: 160)
                         } else {
                             Text(title)
                                 .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(Color(hex: "4158D0"))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 20)
                                 .frame(width: 200)
-                                .foregroundColor(.black)
                         }
                     }
                 }
@@ -224,18 +282,57 @@ struct CreateDecisionView: View {
                     }
                 }) {
                     ZStack {
+                        // 外层阴影
                         Circle()
-                            .fill(Color(hex: "FFF5EA"))
+                            .fill(Color.white)
                             .frame(width: 240, height: 240)
-                            .shadow(color: Color.black.opacity(0.05), radius: 10)
+                            .shadow(color: Color(hex: "C850C0").opacity(0.1), radius: 15, x: 0, y: 8)
                         
-                        VStack(spacing: 8) {
-                            Image(systemName: "plus.circle")
-                                .font(.system(size: 30))
-                                .foregroundColor(Color(.systemGray2))
+                        // 渐变背景
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(
+                                        colors: [
+                                            Color(hex: "FFF1F9"),
+                                            Color(hex: "FFF0F2")
+                                        ]
+                                    ),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 220, height: 220)
+                        
+                        // 发光边框
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    gradient: Gradient(
+                                        colors: [
+                                            Color(hex: "C850C0").opacity(0.3),
+                                            Color(hex: "FFCC70").opacity(0.3),
+                                            Color(hex: "C850C0").opacity(0.3)
+                                        ]
+                                    ),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                            .frame(width: 220, height: 220)
+                            .blur(radius: 1)
+                        
+                        // 内容
+                        VStack(spacing: 12) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(Color(hex: "C850C0"))
+                                .symbolRenderingMode(.hierarchical)
+                            
                             Text("点击添加您的选择...")
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(.systemGray2))
+                                .foregroundColor(Color(hex: "C850C0").opacity(0.6))
                                 .multilineTextAlignment(.center)
                                 .frame(width: 160)
                         }
@@ -266,14 +363,22 @@ struct CreateDecisionView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "plus.circle.fill")
                                 .font(.system(size: 20))
+                                .symbolRenderingMode(.hierarchical)
                             Text("添加选择 \(options.count + 1)")
                                 .font(.system(size: 17, weight: .medium))
                         }
-                        .foregroundColor(Color(hex: "C850C0"))
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color(hex: "C850C0").opacity(0.1))
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: getGradientColorsForOption(index: options.count)),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .cornerRadius(25)
+                        .shadow(color: getGradientColorsForOption(index: options.count)[0].opacity(0.3), radius: 10, x: 0, y: 4)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
@@ -314,28 +419,67 @@ struct CreateDecisionView: View {
                 }
             }) {
                 ZStack {
+                    // 外层阴影
                     Circle()
-                        .fill(Color(hex: "FFF5EA"))
+                        .fill(Color.white)
                         .frame(width: 240, height: 240)
-                        .shadow(color: Color.black.opacity(0.05), radius: 10)
+                        .shadow(color: Color(hex: "FFCC70").opacity(0.1), radius: 15, x: 0, y: 8)
                     
-                    VStack(spacing: 8) {
+                    // 渐变背景
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(
+                                    colors: [
+                                        Color(hex: "FFFAF0"),
+                                        Color(hex: "FFF9E6")
+                                    ]
+                                ),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 220, height: 220)
+                    
+                    // 发光边框
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(
+                                    colors: [
+                                        Color(hex: "FFCC70").opacity(0.3),
+                                        Color(hex: "FF6B6B").opacity(0.3),
+                                        Color(hex: "FFCC70").opacity(0.3)
+                                    ]
+                                ),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                        .frame(width: 220, height: 220)
+                        .blur(radius: 1)
+                    
+                    // 内容
+                    VStack(spacing: 12) {
                         if additionalInfo.isEmpty {
-                            Image(systemName: "text.bubble")
-                                .font(.system(size: 30))
-                                .foregroundColor(Color(.systemGray2))
+                            Image(systemName: "text.bubble.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(Color(hex: "FFCC70"))
+                                .symbolRenderingMode(.hierarchical)
+                            
                             Text("点击添加补充信息...")
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(.systemGray2))
+                                .foregroundColor(Color(hex: "FFCC70").opacity(0.7))
                                 .multilineTextAlignment(.center)
                                 .frame(width: 160)
                         } else {
                             Text(additionalInfo)
                                 .font(.system(size: 17))
+                                .foregroundColor(Color(hex: "FF9500"))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 20)
                                 .frame(width: 200)
-                                .foregroundColor(.black)
                         }
                     }
                 }
@@ -359,45 +503,79 @@ struct CreateDecisionView: View {
     }
     
     private var analyzingView: some View {
-        VStack(spacing: 25) {
-            // 分析动画
-            ZStack {
-                Circle()
-                    .stroke(Color("AppPrimary").opacity(0.2), lineWidth: 8)
-                    .frame(width: 80, height: 80)
-                
-                Circle()
-                    .trim(from: 0, to: 0.7)
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                    )
-                    .frame(width: 80, height: 80)
-                    .rotationEffect(.degrees(isAnalyzing ? 360 : 0))
-                    .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false), value: isAnalyzing)
-                    .onAppear { isAnalyzing = true }
-            }
+        ZStack {
+            #if canImport(UIKit)
+            Color(UIColor.systemBackground)
+                .ignoresSafeArea()
+            #else
+            Color.white
+                .ignoresSafeArea()
+            #endif
             
-            VStack(spacing: 12) {
-                Text("正在分析中...")
-                    .font(.system(size: 18, weight: .semibold))
+            VStack(spacing: 25) {
+                Spacer()
                 
-                Text("AI正在分析您的决策，这可能需要几秒钟时间")
-                    .font(.system(size: 15))
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 30)
+                // 分析动画
+                ZStack {
+                    // 背景圆圈
+                    Circle()
+                        .stroke(Color("AppPrimary").opacity(0.2), lineWidth: 8)
+                        .frame(width: 100, height: 100)
+                    
+                    // 动画圆圈
+                    let gradient = LinearGradient(
+                        gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    
+                    let strokeStyle = StrokeStyle(lineWidth: 8, lineCap: .round)
+                    
+                    Circle()
+                        .trim(from: 0, to: 0.7)
+                        .stroke(gradient, style: strokeStyle)
+                        .frame(width: 100, height: 100)
+                        .rotationEffect(.degrees(isAnalyzing ? 360 : 0))
+                        .animation(
+                            Animation.linear(duration: 1)
+                                .repeatForever(autoreverses: false),
+                            value: isAnalyzing
+                        )
+                        .onAppear { isAnalyzing = true }
+                }
+                .padding(.bottom, 30)
+                
+                VStack(spacing: 15) {
+                    Text("正在分析中...")
+                        .font(.system(size: 22, weight: .semibold))
+                    
+                    Text("AI正在分析您的决策，这可能需要几秒钟时间")
+                        .font(.system(size: 17))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+                
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .onAppear {
+            // 确保至少有两个选项，防止崩溃
+            if options.count < 2 {
+                let defaultOptions = [
+                    Option(title: "是", description: ""),
+                    Option(title: "否", description: "")
+                ]
+                
+                // 保留现有选项并添加缺少的选项
+                var updatedOptions = options
+                for i in options.count..<2 {
+                    updatedOptions.append(defaultOptions[i])
+                }
+                options = updatedOptions
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 60)
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 10, y: 5)
     }
     
     // 控制底部按钮显示的计算属性
@@ -460,7 +638,12 @@ struct CreateDecisionView: View {
     }
     
     private func moveToNextStep() {
-        withAnimation {
+        // 将当前选项添加到选项列表，如果有的话
+        if currentStep == .title && !currentOption.isEmpty {
+            addCurrentOption()
+        }
+        
+        withAnimation(.easeInOut(duration: 0.3)) {
             switch currentStep {
             case .title:
                 currentStep = .options
@@ -485,6 +668,18 @@ struct CreateDecisionView: View {
     }
     
     private func startAnalysis() {
+        // 确保至少有两个选项，防止索引越界
+        if options.count < 2 {
+            // 如果选项不足两个，添加必要的选项
+            while options.count < 2 {
+                let option = Option(
+                    title: options.isEmpty ? "是" : "否",
+                    description: ""
+                )
+                options.append(option)
+            }
+        }
+        
         currentStep = .analyzing
         
         let newDecision = Decision(
@@ -531,7 +726,7 @@ struct OptionCard: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color(hex: isFirst ? "4158D0" : "C850C0"))
+                    .background(getOptionBadgeColor(index: index))
                     .cornerRadius(12)
                 
                 Spacer()
@@ -548,9 +743,28 @@ struct OptionCard: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground))
+        #if canImport(UIKit)
+        .background(Color(UIColor.systemBackground))
+        #else
+        .background(Color.white)
+        #endif
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 8, y: 4)
+    }
+    
+    private func getOptionBadgeColor(index: Int) -> Color {
+        switch index {
+        case 0:
+            return Color(hex: "4158D0")  // 深蓝色
+        case 1:
+            return Color(hex: "C850C0")  // 紫色
+        case 2:
+            return Color(hex: "FFCC70")  // 金色
+        case 3:
+            return Color(hex: "FF6B6B")  // 珊瑚红
+        default:
+            return Color(hex: "4ECDC4")  // 青绿色
+        }
     }
 }
 
@@ -560,43 +774,78 @@ struct StepProgressBar: View {
     private let steps = CreateDecisionView.Step.allCases
     
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(steps, id: \.self) { step in
-                Circle()
-                    .fill(stepColor(for: step))
-                    .frame(width: 8, height: 8)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.primary.opacity(currentStep == step ? 0.2 : 0),
-                                  lineWidth: 2)
-                            .padding(-2)
-                    )
-                    .scaleEffect(currentStep == step ? 1.2 : 1.0)
-                    .animation(.spring(response: 0.3), value: currentStep == step)
-                
-                if step != .result {
-                    Rectangle()
-                        .fill(stepLineColor(for: step))
-                        .frame(height: 2)
-                }
+        HStack(spacing: 10) {
+            ForEach(0..<steps.count, id: \.self) { index in
+                let step = steps[index]
+                stepView(for: step, index: index)
             }
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
     }
     
-    private func stepColor(for step: CreateDecisionView.Step) -> Color {
-        if currentStep.rawValue > step.rawValue {
-            return .primary
-        } else if currentStep == step {
-            return .primary
+    private func stepView(for step: CreateDecisionView.Step, index: Int) -> some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 0) {
+                // 圆点
+                stepCircle(for: step)
+                
+                // 连接线
+                if index < steps.count - 1 {
+                    stepConnector(from: step, to: steps[index + 1])
+                }
+            }
+            
+            // 步骤名称
+            Text(step.title)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(currentStep == step ? step.color.0 : .secondary)
+                .fixedSize()
         }
-        return Color(.systemGray4)
+        .frame(maxWidth: .infinity)
     }
     
-    private func stepLineColor(for step: CreateDecisionView.Step) -> Color {
-        if currentStep.rawValue > step.rawValue {
-            return .primary
-        }
-        return Color(.systemGray4)
+    private func stepCircle(for step: CreateDecisionView.Step) -> some View {
+        Circle()
+            .fill(currentStep.rawValue >= step.rawValue ? 
+                LinearGradient(
+                    gradient: Gradient(colors: [step.color.0, step.color.1]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ) : LinearGradient(
+                    gradient: Gradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+            .frame(width: 26, height: 26)
+            .overlay(
+                Group {
+                    if currentStep.rawValue > step.rawValue {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                    } else if currentStep == step {
+                        Circle()
+                            .stroke(Color.white, lineWidth: 3)
+                            .frame(width: 12, height: 12)
+                    }
+                }
+            )
+    }
+    
+    private func stepConnector(from: CreateDecisionView.Step, to: CreateDecisionView.Step) -> some View {
+        Rectangle()
+            .fill(from.rawValue < currentStep.rawValue ?
+                LinearGradient(
+                    gradient: Gradient(colors: [from.color.0, to.color.0]),
+                    startPoint: .leading, 
+                    endPoint: .trailing
+                ) : LinearGradient(
+                    gradient: Gradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)]),
+                    startPoint: .leading,
+                    endPoint: .trailing
+                ))
+            .frame(height: 4)
     }
 }
 
@@ -667,8 +916,24 @@ struct InputSheet: View {
                 // 输入区域
                 ZStack {
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color(hex: "4158D0").opacity(0.05))
+                        .fill(Color(hex: "F8F9FF"))
                         .frame(height: 150)
+                        .shadow(color: Color(hex: "4158D0").opacity(0.05), radius: 10, y: 4)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(hex: "4158D0").opacity(0.3),
+                                            Color(hex: "C850C0").opacity(0.1),
+                                            Color(hex: "4158D0").opacity(0.1)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
                     
                     TextEditor(text: $text)
                         .font(.system(size: 17))
@@ -678,10 +943,16 @@ struct InputSheet: View {
                         .background(
                             ZStack(alignment: .topLeading) {
                                 if text.isEmpty {
-                                    Text(placeholder)
-                                        .font(.system(size: 17))
-                                        .foregroundColor(Color(hex: "4158D0").opacity(0.5))
-                                        .padding(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                                    HStack {
+                                        Image(systemName: "pencil.line")
+                                            .foregroundColor(Color(hex: "4158D0").opacity(0.5))
+                                            .font(.system(size: 15))
+                                        
+                                        Text(placeholder)
+                                            .font(.system(size: 17))
+                                            .foregroundColor(Color(hex: "4158D0").opacity(0.5))
+                                    }
+                                    .padding(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                                 }
                             }
                         )
@@ -707,6 +978,7 @@ struct InputSheet: View {
                                 )
                             )
                             .cornerRadius(25)
+                            .shadow(color: Color(hex: "4158D0").opacity(0.3), radius: 8, y: 4)
                     }
                     .disabled(text.isEmpty)
                     .opacity(text.isEmpty ? 0.6 : 1.0)
@@ -719,16 +991,38 @@ struct InputSheet: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 34) // 增加底部间距，避免被圆角遮挡
+                .padding(.bottom, 34)
             }
+            #if os(iOS)
             .navigationBarHidden(true)
+            #endif
         }
-        .presentationDetents([.height(380)])
-        .presentationBackground(.regularMaterial)
+        #if os(iOS)
+        .presentationDetents([.height(400)])
+        .presentationDragIndicator(.visible)
+        #endif
     }
 }
 
 #Preview {
     CreateDecisionView()
         .environmentObject(DecisionStore())
+}
+
+// 添加获取渐变色的函数
+extension CreateDecisionView {
+    func getGradientColorsForOption(index: Int) -> [Color] {
+        switch index {
+        case 0:
+            return [Color(hex: "4158D0"), Color(hex: "C850C0")]  // 深蓝到紫色渐变
+        case 1:
+            return [Color(hex: "C850C0"), Color(hex: "FFCC70")]  // 紫色到金色渐变
+        case 2:
+            return [Color(hex: "FFCC70"), Color(hex: "FF6B6B")]  // 金色到珊瑚红渐变
+        case 3:
+            return [Color(hex: "FF6B6B"), Color(hex: "4ECDC4")]  // 珊瑚红到青绿渐变
+        default:
+            return [Color(hex: "4ECDC4"), Color(hex: "2ECC71")]  // 青绿到翠绿渐变
+        }
+    }
 } 

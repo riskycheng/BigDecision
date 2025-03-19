@@ -13,6 +13,15 @@ class AIService {
             // 模拟网络延迟
             Thread.sleep(forTimeInterval: 2.0)
             
+            // 确保options数组至少有两个元素
+            guard decision.options.count >= 2 else {
+                DispatchQueue.main.async {
+                    let error = NSError(domain: "AIService", code: 1, userInfo: [NSLocalizedDescriptionKey: "决策选项不足，至少需要两个选项"])
+                    completion(.failure(error))
+                }
+                return
+            }
+            
             // 构建提示文本（在实际应用中会发送给AI服务）
             _ = """
             请帮我分析以下决策：
