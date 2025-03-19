@@ -117,7 +117,7 @@ struct HomeView: View {
                                             selectedDecision = decision
                                             showingResultView = true
                                         }) {
-                                            HistoryItemRow(decision: decision)
+                                            CompactHistoryItemRow(decision: decision)
                                         }
                                         .buttonStyle(PlainButtonStyle())
                                         .padding(.horizontal)
@@ -247,6 +247,131 @@ struct HomeView: View {
         print("在非iOS平台上分享功能尚未实现")
     }
     #endif
+}
+
+struct CompactHistoryItemRow: View {
+    let decision: Decision
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // 标题和日期
+            HStack {
+                HStack(spacing: 8) {
+                    Image(systemName: decision.decisionType.icon)
+                        .foregroundColor(Color("AppPrimary"))
+                        .font(.system(size: 16))
+                        .frame(width: 24, height: 24)
+                        .background(Color("AppPrimary").opacity(0.1))
+                        .clipShape(Circle())
+                    
+                    Text(decision.title)
+                        .font(.system(size: 17, weight: .semibold))
+                        .lineLimit(1)
+                    
+                    Image(systemName: "chevron.forward")
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Text(formatDate(decision.createdAt))
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            }
+            
+            if let result = decision.result {
+                // 结果和置信度
+                VStack(alignment: .leading, spacing: 8) {
+                    // 结果
+                    HStack(spacing: 8) {
+                        Text("结果")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            #if canImport(UIKit)
+                            .background(Color(UIColor.systemGray6))
+                            #else
+                            .background(Color.gray.opacity(0.1))
+                            #endif
+                            .cornerRadius(4)
+                        
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.system(size: 13))
+                        
+                        Text(result.recommendation == "A" ? decision.options[0].title : decision.options[1].title)
+                            .font(.system(size: 15, weight: .medium))
+                            .lineLimit(1)
+                        
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color("AppPrimary").opacity(0.6))
+                    }
+                    
+                    // 置信度
+                    HStack(spacing: 8) {
+                        Text("\(Int(result.confidence * 100))%")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(Color("AppPrimary"))
+                        
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                Rectangle()
+                                    .fill(Color("AppPrimary").opacity(0.2))
+                                    .frame(width: geometry.size.width, height: 6)
+                                    .cornerRadius(3)
+                                
+                                Rectangle()
+                                    .fill(Color("AppPrimary"))
+                                    .frame(width: geometry.size.width * result.confidence, height: 6)
+                                    .cornerRadius(3)
+                            }
+                        }
+                        .frame(height: 6)
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // 检查是否是今天
+        if calendar.isDateInToday(date) {
+            return "今天"
+        }
+        
+        // 检查是否是昨天
+        if calendar.isDateInYesterday(date) {
+            return "昨天"
+        }
+        
+        // 计算与今天的天数差
+        if let days = calendar.dateComponents([.day], from: date, to: now).day, days < 7 {
+            return "\(days)天前"
+        }
+        
+        // 检查是否是今年
+        let isThisYear = calendar.isDate(date, equalTo: now, toGranularity: .year)
+        
+        let formatter = DateFormatter()
+        if isThisYear {
+            formatter.dateFormat = "M月d日"
+        } else {
+            formatter.dateFormat = "yyyy年M月d日"
+        }
+        
+        return formatter.string(from: date)
+    }
 }
 
 #Preview {
