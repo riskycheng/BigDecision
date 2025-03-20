@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>colors</key>
+	<array>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAppPrimary</string>
+			<key>relativePath</key>
+			<string>./AppPrimary.colorset</string>
+			<key>swiftSymbol</key>
+			<string>appPrimary</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Assets.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACColorNameAppSecondary</string>
+			<key>relativePath</key>
+			<string>./AppSecondary.colorset</string>
+			<key>swiftSymbol</key>
+			<string>appSecondary</string>
+		</dict>
+	</array>
+	<key>images</key>
+	<array/>
+	<key>symbols</key>
+	<array/>
+</dict>
+</plist>

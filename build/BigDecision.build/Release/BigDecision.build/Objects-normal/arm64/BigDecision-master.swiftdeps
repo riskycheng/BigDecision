@@ -1,0 +1,27 @@
+version: "Apple Swift version 6.0.3 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)"
+options: "05bb57ec88d0f207095b4672949ac726c6bca4a94feadc5639a47a44346bbbe9"
+build_start_time: [1742344194, 838607000]
+build_end_time: [1742344198, 943825000]
+inputs:
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/BigDecisionApp.swift": !dirty [1741874486, 636913294]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/ContentView.swift": !dirty [1741962146, 925301173]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Models/Decision.swift": !dirty [1742225520, 373689247]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Models/DecisionStore.swift": !dirty [1742117806, 432344145]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Models/PresetDecision.swift": !dirty [1742225498, 466455488]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Services/AIService.swift": !dirty [1742226370, 238097607]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/ActionCard.swift": !dirty [1742054062, 486779137]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/CustomButtons.swift": !dirty [1742257190, 81696831]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/CustomTextEditor.swift": !dirty [1742257424, 255401840]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/CustomTextField.swift": !dirty [1742105824, 252097604]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/DecisionCard.swift": !dirty [1742226508, 826155011]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/EmptyStateView.swift": !dirty [1742030357, 456120558]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/SearchBar.swift": !dirty [1742103153, 986490686]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/CreateDecisionView.swift": !dirty [1742344185, 61102000]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/HistoryView.swift": !dirty [1742344116, 357692783]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/HomeView.swift": !dirty [1742344116, 357740158]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/ResultView.swift": !dirty [1742344116, 357587075]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/SettingsView.swift": !dirty [1742141950, 104183543]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/StatsView.swift": !dirty [1742117753, 848134124]
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/WelcomeView.swift": !dirty [1741875022, 788740908]
+  ? "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/DerivedSources/GeneratedAssetSymbols.swift"
+  : !dirty [1742344194, 789049673]

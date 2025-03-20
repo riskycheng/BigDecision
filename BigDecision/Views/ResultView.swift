@@ -3,6 +3,198 @@ import SwiftUI
 import UIKit
 #endif
 
+private struct TextHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+struct ExpandableText: View {
+    let text: String
+    let maxLines: Int
+    @State private var isExpanded = false
+    @State private var isTruncated = false
+    @State private var showingDetailDialog = false
+    @State private var intrinsicHeight: CGFloat = 0
+    @State private var truncatedHeight: CGFloat = 0
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .bottom, spacing: 4) {
+                Text(text)
+                    .font(.system(size: 17))
+                    .lineLimit(isExpanded ? nil : maxLines)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear.preference(
+                                key: TextHeightPreferenceKey.self,
+                                value: geometry.size.height
+                            )
+                        }
+                    )
+                    .onPreferenceChange(TextHeightPreferenceKey.self) { height in
+                        if truncatedHeight == 0 {
+                            truncatedHeight = height
+                        }
+                    }
+                
+                if isTruncated && !isExpanded {
+                    Button(action: { showingDetailDialog = true }) {
+                        HStack(spacing: 2) {
+                            Text("查看详情")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color("AppPrimary").opacity(0.8))
+                            Image(systemName: "chevron.forward")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(Color("AppPrimary").opacity(0.6))
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule()
+                                .fill(Color("AppPrimary").opacity(0.1))
+                        )
+                    }
+                }
+            }
+            
+            ZStack {
+                // 用于测量完整文本高度的隐藏文本
+                Text(text)
+                    .font(.system(size: 17))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(nil)
+                    .hidden()
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear.onAppear {
+                                intrinsicHeight = geometry.size.height
+                                isTruncated = intrinsicHeight > truncatedHeight
+                            }
+                        }
+                    )
+            }
+            .frame(height: 0)
+        }
+        .sheet(isPresented: $showingDetailDialog) {
+            DetailDialog(title: "详细内容", content: text)
+                .interactiveDismissDisabled(false)
+        }
+    }
+}
+
+struct DetailDialog: View {
+    let title: String
+    let content: String
+    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) var colorScheme
+    @State private var showContent = false
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 16) {
+                    // 顶部标题
+                    HStack(spacing: 6) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 15))
+                            .foregroundColor(.secondary)
+                        Text(title)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    
+                    // 内容区域
+                    Text(content)
+                        .font(.system(size: 17))
+                        .lineSpacing(6)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(colorScheme == .dark ? Color.black.opacity(0.5) : Color.white)
+                                .shadow(color: Color.black.opacity(0.05), radius: 10, y: 5)
+                        )
+                        .padding(.horizontal)
+                        .opacity(showContent ? 1 : 0)
+                        .offset(y: showContent ? 0 : 20)
+                }
+                .padding(.bottom, 30)
+            }
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color("AppPrimary").opacity(0.1),
+                        Color("AppSecondary").opacity(0.05)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Text("完成")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Color("AppPrimary"))
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.3).delay(0.2)) {
+                showContent = true
+            }
+        }
+    }
+}
+
+struct CardView<Content: View>: View {
+    let content: Content
+    var backgroundColor: Color = Color(UIColor.systemBackground)
+    var topIcon: (name: String, color: Color)? = nil
+    
+    init(backgroundColor: Color = Color(UIColor.systemBackground),
+         topIcon: (name: String, color: Color)? = nil,
+         @ViewBuilder content: () -> Content) {
+        self.content = content()
+        self.backgroundColor = backgroundColor
+        self.topIcon = topIcon
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if let icon = topIcon {
+                HStack {
+                    Image(systemName: icon.name)
+                        .font(.system(size: 14))
+                        .foregroundColor(icon.color)
+                    Spacer()
+                }
+                .padding(.bottom, 12)
+            }
+            
+            content
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(backgroundColor)
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+    }
+}
+
 struct ResultView: View {
     let decision: Decision
     @State private var isFavorited: Bool
@@ -21,72 +213,104 @@ struct ResultView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 25) {
+            VStack(spacing: 16) {
                 // 决策标题
-                Text(decision.title)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                    .padding(.top)
+                CardView(backgroundColor: Color("AppPrimary").opacity(0.08)) {
+                    ExpandableText(text: decision.title, maxLines: 3)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                }
                 
                 if let result = decision.result {
                     // AI推荐结果卡片
-                    VStack(spacing: 15) {
-                        Text("AI推荐")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text(getRecommendedOption(result.recommendation).title)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(Color("AppPrimary"))
-                        
-                        Text("置信度: \(Int(result.confidence * 100))%")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    CardView(backgroundColor: Color("AppPrimary").opacity(0.1)) {
+                        VStack(spacing: 12) {
+                            // 标题栏
+                            HStack {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "sparkles")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(Color("AppPrimary"))
+                                    Text("AI推荐")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color("AppPrimary"))
+                                }
+                                
+                                Spacer()
+                                
+                                // 置信度标签
+                                HStack(spacing: 4) {
+                                    Text("置信度")
+                                        .font(.system(size: 14))
+                                    Text("\(Int(result.confidence * 100))%")
+                                        .font(.system(size: 14, weight: .medium))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color("AppPrimary").opacity(0.8))
+                                .cornerRadius(6)
+                            }
+                            
+                            // 推荐选项
+                            ExpandableText(text: getRecommendedOption(result.recommendation).title, maxLines: 2)
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.primary)
+                        }
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color("AppPrimary").opacity(0.1))
-                    .cornerRadius(15)
                     
                     // 分析理由
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("分析理由")
-                            .font(.headline)
-                        
-                        Text(result.reasoning)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    #if canImport(UIKit)
-                    .background(Color(UIColor.systemBackground))
-                    #else
-                    .background(Color.white)
-                    #endif
-                    .cornerRadius(15)
-                    
-                    // 确保至少有两个选项
-                    if decision.options.count >= 2 {
-                        // 选项对比
-                        VStack(spacing: 20) {
-                            ForEach(decision.options) { option in
-                                OptionAnalysisCard(
-                                    option: option,
-                                    pros: option.id == decision.options[0].id ? result.prosA : result.prosB,
-                                    cons: option.id == decision.options[0].id ? result.consA : result.consB
+                    CardView(backgroundColor: Color(UIColor.systemBackground)) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "doc.text")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Color("AppPrimary"))
+                                Text("分析理由")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color("AppPrimary"))
+                            }
+                            
+                            ExpandableText(text: result.reasoning, maxLines: 4)
+                                .foregroundColor(.secondary)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color("AppPrimary").opacity(0.08))
                                 )
+                        }
+                    }
+                    
+                    // 详情分析
+                    CardView(backgroundColor: Color(UIColor.systemBackground)) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "list.bullet.clipboard")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Color("AppPrimary"))
+                                Text("详情分析")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color("AppPrimary"))
+                            }
+                            
+                            // 选项对比
+                            if decision.options.count >= 2 {
+                                VStack(spacing: 16) {
+                                    ForEach(decision.options) { option in
+                                        OptionAnalysisCard(
+                                            option: option,
+                                            pros: option.id == decision.options[0].id ? result.prosA : result.prosB,
+                                            cons: option.id == decision.options[0].id ? result.consA : result.consB
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                     
                     // 底部操作按钮栏
-                    VStack(spacing: 15) {
-                        Divider()
-                        
+                    CardView(backgroundColor: Color(UIColor.secondarySystemBackground)) {
                         HStack(spacing: 20) {
                             // 收藏按钮
                             Button(action: toggleFavorite) {
@@ -144,8 +368,6 @@ struct ResultView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal)
-                        .padding(.bottom)
                     }
                 }
             }
@@ -327,11 +549,11 @@ struct OptionAnalysisCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text(option.title)
+            ExpandableText(text: option.title, maxLines: 1)
                 .font(.headline)
             
             if !option.description.isEmpty {
-                Text(option.description)
+                ExpandableText(text: option.description, maxLines: 2)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -352,9 +574,15 @@ struct OptionAnalysisCard: View {
                                 Text(pro)
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                         }
                     }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.green.opacity(0.1))
+                    .cornerRadius(8)
                 }
                 
                 if !cons.isEmpty {
@@ -372,20 +600,18 @@ struct OptionAnalysisCard: View {
                                 Text(con)
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                         }
                     }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(8)
                 }
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        #if canImport(UIKit)
-        .background(Color(UIColor.systemBackground))
-        #else
-        .background(Color.white)
-        #endif
-        .cornerRadius(15)
     }
 }
 

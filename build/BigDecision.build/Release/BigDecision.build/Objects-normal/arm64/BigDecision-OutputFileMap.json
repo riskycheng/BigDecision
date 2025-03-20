@@ -1,0 +1,115 @@
+{
+  "" : {
+    "const-values" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecision-master.swiftconstvalues",
+    "dependencies" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecision-master.d",
+    "diagnostics" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecision-master.dia",
+    "emit-module-dependencies" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecision-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecision-master-emit-module.dia",
+    "swift-dependencies" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecision-master.swiftdeps"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/BigDecisionApp.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecisionApp.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecisionApp.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/BigDecisionApp.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/ContentView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Models/Decision.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/Decision.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/Decision.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/Decision.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Models/DecisionStore.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/DecisionStore.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/DecisionStore.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/DecisionStore.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Models/PresetDecision.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/PresetDecision.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/PresetDecision.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/PresetDecision.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Services/AIService.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/AIService.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/AIService.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/AIService.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/ActionCard.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ActionCard.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ActionCard.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ActionCard.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/CustomButtons.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomButtons.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomButtons.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomButtons.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/CustomTextEditor.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomTextEditor.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomTextEditor.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomTextEditor.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/CustomTextField.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomTextField.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomTextField.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CustomTextField.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/DecisionCard.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/DecisionCard.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/DecisionCard.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/DecisionCard.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/EmptyStateView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/EmptyStateView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/EmptyStateView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/EmptyStateView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/Components/SearchBar.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/SearchBar.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/SearchBar.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/SearchBar.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/CreateDecisionView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CreateDecisionView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CreateDecisionView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/CreateDecisionView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/HistoryView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/HistoryView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/HistoryView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/HistoryView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/HomeView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/HomeView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/HomeView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/HomeView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/ResultView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ResultView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ResultView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/ResultView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/SettingsView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/SettingsView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/StatsView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/StatsView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/StatsView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/StatsView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/BigDecision/Views/WelcomeView.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/WelcomeView.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/WelcomeView.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/WelcomeView.o"
+  },
+  "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/jiancheng/Projects/SwiftProjects/BigDecision/build/BigDecision.build/Release/BigDecision.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}
