@@ -13,6 +13,7 @@ struct HomeView: View {
     @State private var showingResultView = false
     @State private var selectedDecision: Decision? = nil
     @State private var showingHistoryView = false
+    @State private var showingGuideView = false
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -148,17 +149,11 @@ struct HomeView: View {
                             
                             // 操作卡片
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) { // 减小网格间距
-                                ActionCard(icon: "shuffle", title: "随机决定", action: {
-                                    randomDecision()
-                                })
-                                ActionCard(icon: "star.fill", title: "收藏的决定", action: {
-                                    showingFavoritesView = true
-                                })
-                                ActionCard(icon: "square.and.arrow.up", title: "分享决定", action: {
-                                    shareApp()
-                                })
                                 ActionCard(icon: "chart.bar.fill", title: "决定统计", action: {
                                     showingStatsView = true
+                                })
+                                ActionCard(icon: "questionmark.circle.fill", title: "新手指引", action: {
+                                    showingGuideView = true
                                 })
                             }
                             .padding(.horizontal)
@@ -202,6 +197,9 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showingHistoryView) {
             HistoryView()
+        }
+        .sheet(isPresented: $showingGuideView) {
+            GuideView()
         }
     }
     
