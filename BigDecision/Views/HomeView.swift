@@ -71,9 +71,9 @@ struct HomeView: View {
                 .frame(height: 160)
                 
                 ScrollView {
-                    VStack(spacing: 15) { // 减小区域之间的间距
+                    VStack(spacing: 12) {
                         // 最近的决定区域
-                        VStack(spacing: 12) { // 减小内部间距
+                        VStack(spacing: 8) {
                             // 标题区域
                             HStack {
                                 Text("最近的决定")
@@ -91,8 +91,8 @@ struct HomeView: View {
                                 }
                             }
                             .padding(.horizontal)
-                            .padding(.top, 12) // 减少顶部内边距
-                            .padding(.bottom, 6) // 减少底部内边距
+                            .padding(.top, 8)
+                            .padding(.bottom, 4)
                             
                             // 内容区域
                             if decisionStore.decisions.filter({ $0.result != nil }).isEmpty {
@@ -108,11 +108,11 @@ struct HomeView: View {
                                 .background(Color.clear) // 确保背景透明
                             } else {
                                 // 决定卡片列表
-                                VStack(spacing: 10) {
+                                VStack(spacing: 8) {
                                     ForEach(Array(decisionStore.decisions
                                         .filter { $0.result != nil }
                                         .sorted(by: { $0.createdAt > $1.createdAt })
-                                        .prefix(2)
+                                        .prefix(3)
                                         .enumerated()), id: \.element.id) { index, decision in
                                         Button(action: {
                                             selectedDecision = decision
@@ -124,7 +124,7 @@ struct HomeView: View {
                                         .padding(.horizontal)
                                     }
                                 }
-                                .padding(.bottom, 16)
+                                .padding(.bottom, 12)
                             }
                         }
                         #if canImport(UIKit)
@@ -135,8 +135,10 @@ struct HomeView: View {
                         .cornerRadius(15)
                         .padding(.horizontal, 5)
                         
+                        Spacer(minLength: 0)
+                        
                         // 快速操作区域
-                        VStack(spacing: 12) { // 减小间距
+                        VStack(spacing: 8) {
                             HStack {
                                 Text("快速操作")
                                     .font(.title3)
@@ -144,11 +146,11 @@ struct HomeView: View {
                                 Spacer()
                             }
                             .padding(.horizontal)
-                            .padding(.top, 12) // 减少顶部内边距
-                            .padding(.bottom, 6) // 减少底部内边距
+                            .padding(.top, 8)
+                            .padding(.bottom, 4)
                             
                             // 操作卡片
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) { // 减小网格间距
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                                 ActionCard(icon: "chart.bar.fill", title: "决定统计", action: {
                                     showingStatsView = true
                                 })
@@ -157,7 +159,7 @@ struct HomeView: View {
                                 })
                             }
                             .padding(.horizontal)
-                            .padding(.bottom, 12) // 减少底部内边距
+                            .padding(.bottom, 8)
                         }
                         #if canImport(UIKit)
                         .background(Color(UIColor.systemBackground))
@@ -166,11 +168,9 @@ struct HomeView: View {
                         #endif
                         .cornerRadius(15)
                         .padding(.horizontal, 5)
-                        
-                        // 底部空间
-                        Spacer(minLength: 20) // 减小底部空间
+                        .padding(.bottom, 8)
                     }
-                    .padding(.top, 8) // 减少顶部间距
+                    .padding(.top, 8)
                 }
             }
         }
