@@ -51,6 +51,19 @@ struct CreateDecisionView: View {
     @State private var isAnalyzing = false
     @State private var isDescriptionExpanded = false  // 新增状态控制补充说明的展开/折叠
     @State private var isEditingAdditionalInfo = false
+    @State private var errorMessage: String?
+    @State private var showingError = false
+    @State private var retryCount = 0
+    private let maxRetries = 2
+    @State private var analysisSteps: [String] = []
+    @State private var currentAnalysisStep = 0
+    private let analysisStepMessages = [
+        "正在理解您的决策问题...",
+        "分析选项A的优缺点...",
+        "分析选项B的优缺点...",
+        "权衡各个因素...",
+        "生成最终建议..."
+    ]
     
     var body: some View {
         NavigationView {
@@ -506,45 +519,165 @@ struct CreateDecisionView: View {
             VStack(spacing: 25) {
                 Spacer()
                 
-                // 分析动画
-                ZStack {
-                    // 背景圆圈
-                    Circle()
-                        .stroke(Color("AppPrimary").opacity(0.2), lineWidth: 8)
-                        .frame(width: 100, height: 100)
-                    
-                    // 动画圆圈
-                    let gradient = LinearGradient(
-                        gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    
-                    let strokeStyle = StrokeStyle(lineWidth: 8, lineCap: .round)
-                    
-                    Circle()
-                        .trim(from: 0, to: 0.7)
-                        .stroke(gradient, style: strokeStyle)
-                        .frame(width: 100, height: 100)
-                        .rotationEffect(.degrees(isAnalyzing ? 360 : 0))
-                        .animation(
-                            Animation.linear(duration: 1)
-                                .repeatForever(autoreverses: false),
-                            value: isAnalyzing
-                        )
-                        .onAppear { isAnalyzing = true }
-                }
-                .padding(.bottom, 30)
-                
-                VStack(spacing: 15) {
-                    Text("正在分析中...")
-                        .font(.system(size: 22, weight: .semibold))
-                    
-                    Text("AI正在分析您的决策，这可能需要几秒钟时间")
-                        .font(.system(size: 17))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
+                if showingError {
+                    // 错误状态视图
+                    VStack(spacing: 20) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(.orange)
+                        
+                        Text(errorMessage ?? "发生未知错误")
+                            .font(.system(size: 17))
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 40)
+                        
+                        if retryCount < maxRetries {
+                            Button(action: {
+                                withAnimation {
+                                    showingError = false
+                                    retryAnalysis()
+                                }
+                            }) {
+                                Text("重试")
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 30)
+                                    .padding(.vertical, 12)
+                                    .background(Color("AppPrimary"))
+                                    .cornerRadius(20)
+                            }
+                        } else {
+                            Button(action: {
+                                withAnimation {
+                                    currentStep = .additionalInfo
+                                    showingError = false
+                                    retryCount = 0
+                                }
+                            }) {
+                                Text("返回修改")
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 30)
+                                    .padding(.vertical, 12)
+                                    .background(Color("AppPrimary"))
+                                    .cornerRadius(20)
+                            }
+                        }
+                    }
+                } else {
+                    // 分析中状态视图
+                    VStack(spacing: 25) {
+                        // 分析动画
+                        ZStack {
+                            // 波浪动画背景
+                            ForEach(0..<3) { index in
+                                Circle()
+                                    .stroke(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color("AppPrimary").opacity(0.2 - Double(index) * 0.05),
+                                                Color("AppSecondary").opacity(0.2 - Double(index) * 0.05)
+                                            ]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        ),
+                                        lineWidth: 8
+                                    )
+                                    .frame(width: 100 + CGFloat(index) * 30,
+                                           height: 100 + CGFloat(index) * 30)
+                                    .scaleEffect(isAnalyzing ? 1.2 : 0.8)
+                                    .opacity(isAnalyzing ? 0.2 : 0.8)
+                                    .animation(
+                                        Animation.easeInOut(duration: 1.5)
+                                            .repeatForever(autoreverses: true)
+                                            .delay(Double(index) * 0.2),
+                                        value: isAnalyzing
+                                    )
+                            }
+                            
+                            // 背景圆圈
+                            Circle()
+                                .stroke(Color("AppPrimary").opacity(0.2), lineWidth: 8)
+                                .frame(width: 100, height: 100)
+                            
+                            // 动画圆圈
+                            Circle()
+                                .trim(from: 0, to: 0.7)
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color("AppPrimary"), Color("AppSecondary")]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    ),
+                                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                                )
+                                .frame(width: 100, height: 100)
+                                .rotationEffect(.degrees(isAnalyzing ? 360 : 0))
+                                .animation(
+                                    Animation.linear(duration: 1)
+                                        .repeatForever(autoreverses: false),
+                                    value: isAnalyzing
+                                )
+                            
+                            // 中心图标
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 30))
+                                .foregroundColor(Color("AppPrimary"))
+                                .scaleEffect(isAnalyzing ? 1.1 : 0.9)
+                                .animation(
+                                    Animation.easeInOut(duration: 1)
+                                        .repeatForever(autoreverses: true),
+                                    value: isAnalyzing
+                                )
+                        }
+                        .padding(.bottom, 30)
+                        
+                        VStack(spacing: 15) {
+                            Text("正在分析中...")
+                                .font(.system(size: 22, weight: .semibold))
+                            
+                            // 分析步骤显示
+                            VStack(spacing: 12) {
+                                ForEach(analysisSteps.indices, id: \.self) { index in
+                                    HStack(spacing: 8) {
+                                        // 步骤完成图标
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color.green.opacity(0.2))
+                                                .frame(width: 24, height: 24)
+                                                .scaleEffect(index < currentAnalysisStep ? 1 : 0)
+                                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: currentAnalysisStep)
+                                            
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundColor(.green)
+                                                .opacity(index < currentAnalysisStep ? 1 : 0)
+                                                .scaleEffect(index < currentAnalysisStep ? 1 : 0.5)
+                                                .animation(.spring(response: 0.3, dampingFraction: 0.6).delay(0.1), value: currentAnalysisStep)
+                                        }
+                                        
+                                        Text(analysisSteps[index])
+                                            .font(.system(size: 15))
+                                            .foregroundColor(index < currentAnalysisStep ? .secondary : .primary)
+                                            .opacity(index <= currentAnalysisStep ? 1 : 0.5)
+                                            .animation(.easeInOut(duration: 0.3), value: currentAnalysisStep)
+                                        
+                                        if index == currentAnalysisStep - 1 {
+                                            // 当前步骤的动画指示器
+                                            ProgressView()
+                                                .scaleEffect(0.7)
+                                                .tint(Color("AppPrimary"))
+                                        }
+                                    }
+                                    .opacity(index <= currentAnalysisStep ? 1 : 0.5)
+                                    .offset(x: index <= currentAnalysisStep ? 0 : 20)
+                                    .animation(.easeInOut(duration: 0.3), value: currentAnalysisStep)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 40)
+                        }
+                    }
                 }
                 
                 Spacer()
@@ -552,19 +685,25 @@ struct CreateDecisionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
-            // 确保至少有两个选项，防止崩溃
-            if options.count < 2 {
-                let defaultOptions = [
-                    Option(title: "是", description: ""),
-                    Option(title: "否", description: "")
-                ]
-                
-                // 保留现有选项并添加缺少的选项
-                var updatedOptions = options
-                for i in options.count..<2 {
-                    updatedOptions.append(defaultOptions[i])
+            withAnimation {
+                isAnalyzing = true
+            }
+            setupAnalysis()
+        }
+    }
+    
+    private func setupAnalysis() {
+        // 重置分析状态
+        analysisSteps = analysisStepMessages
+        currentAnalysisStep = 0
+        isAnalyzing = true
+        
+        // 模拟分析进度
+        for step in 0..<analysisStepMessages.count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(step) * 0.8) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentAnalysisStep = step + 1
                 }
-                options = updatedOptions
             }
         }
     }
@@ -658,10 +797,14 @@ struct CreateDecisionView: View {
         currentOptionDescription = ""
     }
     
+    private func retryAnalysis() {
+        retryCount += 1
+        startAnalysis()
+    }
+    
     private func startAnalysis() {
         // 确保至少有两个选项，防止索引越界
         if options.count < 2 {
-            // 如果选项不足两个，添加必要的选项
             while options.count < 2 {
                 let option = Option(
                     title: options.isEmpty ? "是" : "否",
@@ -672,18 +815,22 @@ struct CreateDecisionView: View {
         }
         
         currentStep = .analyzing
+        isAnalyzing = true
+        showingError = false
         
         let newDecision = Decision(
             title: title,
             options: options,
             additionalInfo: additionalInfo,
-            decisionType: .other, // 默认为其他类型
-            importance: 3, // 默认重要性
-            timeFrame: .days, // 默认时间框架
+            decisionType: .other,
+            importance: 3,
+            timeFrame: .days,
             createdAt: Date()
         )
         
-        // 使用 AIService 进行分析
+        // 启动分析动画
+        setupAnalysis()
+        
         Task {
             do {
                 let aiService = AIService()
@@ -696,12 +843,17 @@ struct CreateDecisionView: View {
                     self.decisionStore.addDecision(updatedDecision)
                     withAnimation {
                         self.currentStep = .result
+                        self.isAnalyzing = false
+                        self.retryCount = 0
                     }
                 }
             } catch {
-                print("分析失败: \(error.localizedDescription)")
                 await MainActor.run {
-                    self.currentStep = .additionalInfo
+                    isAnalyzing = false
+                    errorMessage = (error as? AIService.AIServiceError)?.localizedDescription ?? error.localizedDescription
+                    withAnimation {
+                        showingError = true
+                    }
                 }
             }
         }

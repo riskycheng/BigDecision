@@ -1,8 +1,45 @@
 import Foundation
+import Network
 
 class AIService {
     private let apiKey = "sk-ezwzqwedwhtnbyitbnyohvzanpitqqlnpjucejddpozmpjxj"  // DeepSeek API Key
     private let baseURL = "https://api.siliconflow.cn/v1/chat/completions"
+    private let monitor = NWPathMonitor()
+    private var isNetworkAvailable = true
+    
+    enum AIServiceError: Error {
+        case networkNotAvailable
+        case requestFailed(String)
+        case invalidResponse
+        case parseError
+        case serverBusy
+        
+        var localizedDescription: String {
+            switch self {
+            case .networkNotAvailable:
+                return "网络连接不可用，请检查网络设置后重试"
+            case .requestFailed(let message):
+                return "请求失败：\(message)"
+            case .invalidResponse:
+                return "服务器响应无效，请稍后重试"
+            case .parseError:
+                return "AI响应格式错误，请稍后重试"
+            case .serverBusy:
+                return "服务器当前繁忙，请稍后重试"
+            }
+        }
+    }
+    
+    init() {
+        setupNetworkMonitoring()
+    }
+    
+    private func setupNetworkMonitoring() {
+        monitor.pathUpdateHandler = { [weak self] path in
+            self?.isNetworkAvailable = path.status == .satisfied
+        }
+        monitor.start(queue: DispatchQueue.global())
+    }
     
     struct Message: Codable {
         let role: String
@@ -31,6 +68,11 @@ class AIService {
     }
     
     func analyzeDecision(_ decision: Decision) async throws -> Decision.Result {
+        // 检查网络状态
+        guard isNetworkAvailable else {
+            throw AIServiceError.networkNotAvailable
+        }
+        
         let systemPrompt = """
         你是一个专业的决策分析助手。请基于用户提供的信息，分析两个选项并给出建议。
         你需要：
@@ -49,6 +91,8 @@ class AIService {
             "prosB": ["优点1", "优点2", ...],
             "consB": ["缺点1", "缺点2", ...]
         }
+        
+        注意：必须严格按照上述JSON格式返回，不要添加任何其他内容。
         """
         
         let userPrompt = """
@@ -89,15 +133,54 @@ class AIService {
         urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONEncoder().encode(request)
         
-        let (data, _) = try await URLSession.shared.data(for: urlRequest)
-        let response = try JSONDecoder().decode(ChatResponse.self, from: data)
-        
-        guard let resultString = response.choices.first?.message.content,
-              let resultData = resultString.data(using: .utf8),
-              let result = try? JSONDecoder().decode(Decision.Result.self, from: resultData) else {
-            throw NSError(domain: "AIService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to parse AI response"])
+        do {
+            let (data, response) = try await URLSession.shared.data(for: urlRequest)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AIServiceError.invalidResponse
+            }
+            
+            // 检查HTTP状态码
+            switch httpResponse.statusCode {
+            case 200:
+                break // 继续处理
+            case 429:
+                throw AIServiceError.serverBusy
+            case 500...599:
+                throw AIServiceError.serverBusy
+            default:
+                throw AIServiceError.requestFailed("HTTP状态码: \(httpResponse.statusCode)")
+            }
+            
+            let apiResponse = try JSONDecoder().decode(ChatResponse.self, from: data)
+            
+            guard let resultString = apiResponse.choices.first?.message.content else {
+                throw AIServiceError.invalidResponse
+            }
+            
+            // 清理 JSON 字符串，移除代码块标记
+            let cleanedString = resultString
+                .replacingOccurrences(of: "```json", with: "")
+                .replacingOccurrences(of: "```", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            guard let resultData = cleanedString.data(using: .utf8) else {
+                throw AIServiceError.invalidResponse
+            }
+            
+            do {
+                let result = try JSONDecoder().decode(Decision.Result.self, from: resultData)
+                return result
+            } catch {
+                print("解析错误: \(error)")
+                print("AI返回内容: \(resultString)")
+                throw AIServiceError.parseError
+            }
+        } catch {
+            if let aiError = error as? AIServiceError {
+                throw aiError
+            }
+            throw AIServiceError.requestFailed(error.localizedDescription)
         }
-        
-        return result
     }
 } 
