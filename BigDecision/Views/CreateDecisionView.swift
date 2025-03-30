@@ -683,11 +683,13 @@ struct CreateDecisionView: View {
             createdAt: Date()
         )
         
-        // 模拟网络延迟
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            AIService.shared.analyzeDecision(decision: newDecision) { result in
-                switch result {
-                case .success(let analysisResult):
+        // 使用 AIService 进行分析
+        Task {
+            do {
+                let aiService = AIService()
+                let analysisResult = try await aiService.analyzeDecision(newDecision)
+                
+                await MainActor.run {
                     var updatedDecision = newDecision
                     updatedDecision.result = analysisResult
                     self.decision = updatedDecision
@@ -695,8 +697,10 @@ struct CreateDecisionView: View {
                     withAnimation {
                         self.currentStep = .result
                     }
-                case .failure(let error):
-                    print("分析失败: \(error.localizedDescription)")
+                }
+            } catch {
+                print("分析失败: \(error.localizedDescription)")
+                await MainActor.run {
                     self.currentStep = .additionalInfo
                 }
             }
