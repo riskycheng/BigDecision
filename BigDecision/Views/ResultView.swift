@@ -200,6 +200,7 @@ struct ResultView: View {
     @State private var isFavorited: Bool
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
+    @State private var showingDetailDialog = false
     #if canImport(UIKit)
     @State private var exportImage: UIImage?
     #endif
@@ -271,14 +272,39 @@ struct ResultView: View {
                                     .foregroundColor(Color("AppPrimary"))
                             }
                             
-                            ExpandableText(text: result.reasoning, maxLines: 4)
-                                .foregroundColor(.secondary)
-                                .padding()
-                                .frame(maxWidth: .infinity)
+                            Button(action: { showingDetailDialog = true }) {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(result.reasoning)
+                                        .font(.system(size: 17))
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(4)
+                                        .multilineTextAlignment(.leading)
+                                        .padding(.horizontal, 12)
+                                        .padding(.top, 12)
+                                        .padding(.bottom, 8)  // 大幅减小底部空间
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    
+                                    // 查看详情按钮
+                                    HStack {
+                                        Spacer()
+                                        Text("查看详情")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(Color("AppPrimary"))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)  // 减小垂直内边距
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color("AppPrimary").opacity(0.1))
+                                            )
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.bottom, 8)
+                                }
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(Color("AppPrimary").opacity(0.08))
                                 )
+                            }
                         }
                     }
                     
@@ -419,6 +445,11 @@ struct ResultView: View {
             }
         }
         #endif
+        .sheet(isPresented: $showingDetailDialog) {
+            if let result = decision.result {
+                DetailDialog(title: "分析理由", content: result.reasoning)
+            }
+        }
     }
     
     private func getRecommendedOption(_ recommendation: String) -> Option {
@@ -548,13 +579,25 @@ struct OptionAnalysisCard: View {
     let cons: [String]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            ExpandableText(text: option.title, maxLines: 1)
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 16) {
+            // 选项标题区域
+            HStack(spacing: 8) {
+                Text("选项")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.secondary.opacity(0.1))
+                    .cornerRadius(6)
+                
+                Text(option.title)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.primary)
+            }
             
             if !option.description.isEmpty {
-                ExpandableText(text: option.description, maxLines: 2)
-                    .font(.subheadline)
+                Text(option.description)
+                    .font(.system(size: 15))
                     .foregroundColor(.secondary)
             }
             
@@ -562,56 +605,64 @@ struct OptionAnalysisCard: View {
                 if !pros.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("优点")
-                            .font(.subheadline)
+                            .font(.system(size: 15, weight: .medium))
                             .foregroundColor(.green)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.green.opacity(0.1))
+                            .cornerRadius(6)
                         
-                        ForEach(pros, id: \.self) { pro in
-                            HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.green)
-                                    .font(.system(size: 14))
-                                
-                                Text(pro)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(pros, id: \.self) { pro in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundColor(.green)
+                                        .font(.system(size: 14))
+                                    
+                                    Text(pro)
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
                             }
                         }
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(8)
                 }
                 
                 if !cons.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("缺点")
-                            .font(.subheadline)
+                            .font(.system(size: 15, weight: .medium))
                             .foregroundColor(.red)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(6)
                         
-                        ForEach(cons, id: \.self) { con in
-                            HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.red)
-                                    .font(.system(size: 14))
-                                
-                                Text(con)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(cons, id: \.self) { con in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundColor(.red)
+                                        .font(.system(size: 14))
+                                    
+                                    Text(con)
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
                             }
                         }
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(8)
                 }
             }
         }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(12)
     }
 }
 
