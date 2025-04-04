@@ -116,7 +116,7 @@ class AIService {
         ]
         
         let request = ChatRequest(
-            model: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+            model: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
             messages: messages,
             stream: false,
             max_tokens: 1024,

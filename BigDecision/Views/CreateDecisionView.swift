@@ -353,6 +353,8 @@ struct CreateDecisionView: View {
                 // 已添加的选项显示
                 VStack(spacing: 16) {
                     ForEach(Array(options.enumerated()), id: \.element.id) { index, option in
+                        #if canImport(UIKit)
+                        // iOS平台支持左滑删除
                         OptionCard(
                             option: option,
                             index: index,
@@ -365,6 +367,36 @@ struct CreateDecisionView: View {
                                 currentOptionDescription = option.description
                             }
                         )
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                withAnimation {
+                                    deleteOption(at: index)
+                                }
+                            } label: {
+                                Label("删除", systemImage: "trash")
+                            }
+                            .tint(.red)
+                        }
+                        #else
+                        // macOS平台使用标准视图
+                        OptionCard(
+                            option: option,
+                            index: index,
+                            isFirst: index == 0,
+                            onEdit: {
+                                editingOptionIndex = index
+                                editingOption = option
+                                showingAddOption = true
+                                currentOption = option.title
+                                currentOptionDescription = option.description
+                            },
+                            onDelete: {
+                                withAnimation {
+                                    deleteOption(at: index)
+                                }
+                            }
+                        )
+                        #endif
                     }
                 }
                 .padding(.horizontal, 20)
@@ -431,7 +463,20 @@ struct CreateDecisionView: View {
                     showingAddOption = false
                     currentOption = ""
                     currentOptionDescription = ""
-                }
+                },
+                onDelete: editingOptionIndex != nil ? {
+                    if let index = editingOptionIndex {
+                        withAnimation {
+                            deleteOption(at: index)
+                        }
+                    }
+                    editingOptionIndex = nil
+                    editingOption = nil
+                    showingAddOption = false
+                    currentOption = ""
+                    currentOptionDescription = ""
+                } : nil,
+                isEditing: editingOptionIndex != nil
             )
         }
     }
@@ -829,6 +874,11 @@ struct CreateDecisionView: View {
         currentOptionDescription = ""
     }
     
+    private func deleteOption(at index: Int) {
+        guard index >= 0 && index < options.count else { return }
+        options.remove(at: index)
+    }
+    
     private func retryAnalysis() {
         retryCount += 1
         startAnalysis()
@@ -896,6 +946,7 @@ struct OptionCard: View {
     let index: Int
     let isFirst: Bool
     let onEdit: () -> Void
+    var onDelete: (() -> Void)? = nil
     
     var body: some View {
         Button(action: onEdit) {
@@ -911,9 +962,22 @@ struct OptionCard: View {
                     
                     Spacer()
                     
-                    Image(systemName: "pencil.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(getOptionBadgeColor(index: index).opacity(0.6))
+                    HStack(spacing: 12) {
+                        #if os(macOS)
+                        if let onDelete = onDelete {
+                            Button(action: onDelete) {
+                                Image(systemName: "trash.circle.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.red.opacity(0.7))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        #endif
+                        
+                        Image(systemName: "pencil.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(getOptionBadgeColor(index: index).opacity(0.6))
+                    }
                 }
                 
                 Text(option.title)
@@ -1080,6 +1144,9 @@ struct InputSheet: View {
     let placeholder: String
     let onCancel: () -> Void
     let onConfirm: () -> Void
+    var onDelete: (() -> Void)? = nil
+    var isEditing: Bool = false
+    @State private var showingDeleteConfirmation = false
     
     var body: some View {
         NavigationView {
@@ -1095,7 +1162,7 @@ struct InputSheet: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                 }
-                .padding(.top, 30)
+                .padding(.top, 60) // 增加顶部间距，避免与导航图标重叠
                 .padding(.bottom, 20)
                 
                 Spacer()
@@ -1170,12 +1237,33 @@ struct InputSheet: View {
                     .disabled(text.isEmpty)
                     .opacity(text.isEmpty ? 0.6 : 1.0)
                     
-                    // 取消按钮
-                    Button(action: onCancel) {
-                        Text("取消")
+                    // 删除按钮 - 仅在编辑现有选项时显示
+                    if isEditing, let deleteAction = onDelete {
+                        Button(action: {
+                            // 显示确认对话框
+                            showingDeleteConfirmation = true
+                        }) {
+                            HStack {
+                                Image(systemName: "trash.fill")
+                                Text("删除此选项")
+                            }
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(Color(hex: "4158D0"))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color.red)
+                            .cornerRadius(25)
+                            .shadow(color: Color.red.opacity(0.3), radius: 8, y: 4)
+                        }
+                        .confirmationDialog("确认删除", isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
+                            Button("删除", role: .destructive, action: deleteAction)
+                            Button("取消", role: .cancel) { }
+                        } message: {
+                            Text("确定要删除这个选项吗？")
+                        }
                     }
+                    
+                    // 取消按钮已移除 - 用户可以下拉来取消
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 34)
