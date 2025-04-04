@@ -64,6 +64,8 @@ struct CreateDecisionView: View {
         "权衡各个因素...",
         "生成最终建议..."
     ]
+    @State private var editingOptionIndex: Int?
+    @State private var editingOption: Option?
     
     var body: some View {
         NavigationView {
@@ -351,7 +353,18 @@ struct CreateDecisionView: View {
                 // 已添加的选项显示
                 VStack(spacing: 16) {
                     ForEach(Array(options.enumerated()), id: \.element.id) { index, option in
-                        OptionCard(option: option, index: index, isFirst: index == 0)
+                        OptionCard(
+                            option: option,
+                            index: index,
+                            isFirst: index == 0,
+                            onEdit: {
+                                editingOptionIndex = index
+                                editingOption = option
+                                showingAddOption = true
+                                currentOption = option.title
+                                currentOptionDescription = option.description
+                            }
+                        )
                     }
                 }
                 .padding(.horizontal, 20)
@@ -392,15 +405,32 @@ struct CreateDecisionView: View {
         .padding(.top, 20)
         .sheet(isPresented: $showingAddOption) {
             InputSheet(
-                title: options.isEmpty ? "您的第一个选择是什么？" : "添加第\(options.count + 1)个选项",
+                title: editingOption != nil ? "编辑选项" : (options.isEmpty ? "您的第一个选择是什么？" : "添加第\(options.count + 1)个选项"),
                 text: $currentOption,
                 placeholder: "例如：在深圳生活",
                 onCancel: {
+                    editingOptionIndex = nil
+                    editingOption = nil
                     showingAddOption = false
+                    currentOption = ""
+                    currentOptionDescription = ""
                 },
                 onConfirm: {
-                    addCurrentOption()
+                    if let index = editingOptionIndex {
+                        // 更新现有选项
+                        var updatedOption = options[index]
+                        updatedOption.title = currentOption
+                        updatedOption.description = currentOptionDescription
+                        options[index] = updatedOption
+                    } else {
+                        // 添加新选项
+                        addCurrentOption()
+                    }
+                    editingOptionIndex = nil
+                    editingOption = nil
                     showingAddOption = false
+                    currentOption = ""
+                    currentOptionDescription = ""
                 }
             )
         }
@@ -865,39 +895,48 @@ struct OptionCard: View {
     let option: Option
     let index: Int
     let isFirst: Bool
+    let onEdit: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("选择 \(index + 1)")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(getOptionBadgeColor(index: index))
-                    .cornerRadius(12)
+        Button(action: onEdit) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("选择 \(index + 1)")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(getOptionBadgeColor(index: index))
+                        .cornerRadius(12)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "pencil.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(getOptionBadgeColor(index: index).opacity(0.6))
+                }
                 
-                Spacer()
+                Text(option.title)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                if !option.description.isEmpty {
+                    Text(option.description)
+                        .font(.system(size: 15))
+                        .foregroundColor(.secondary)
+                }
             }
-            
-            Text(option.title)
-                .font(.system(size: 17, weight: .semibold))
-            
-            if !option.description.isEmpty {
-                Text(option.description)
-                    .font(.system(size: 15))
-                    .foregroundColor(.secondary)
-            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            #if canImport(UIKit)
+            .background(Color(UIColor.systemBackground))
+            #else
+            .background(Color.white)
+            #endif
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.05), radius: 8, y: 4)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        #if canImport(UIKit)
-        .background(Color(UIColor.systemBackground))
-        #else
-        .background(Color.white)
-        #endif
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, y: 4)
+        .buttonStyle(PlainButtonStyle())
     }
     
     private func getOptionBadgeColor(index: Int) -> Color {
