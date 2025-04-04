@@ -588,13 +588,12 @@ struct CreateDecisionView: View {
                                            height: 100 + CGFloat(index) * 30)
                                     .scaleEffect(isAnalyzing ? 1.2 : 0.8)
                                     .opacity(isAnalyzing ? 0.2 : 0.8)
-                                    .animation(
-                                        Animation.easeInOut(duration: 1.5)
-                                            .repeatForever(autoreverses: true)
-                                            .delay(Double(index) * 0.2),
-                                        value: isAnalyzing
-                                    )
                             }
+                            .animation(
+                                Animation.easeInOut(duration: 1.5)
+                                    .repeatForever(autoreverses: true),
+                                value: isAnalyzing
+                            )
                             
                             // 背景圆圈
                             Circle()
@@ -614,22 +613,22 @@ struct CreateDecisionView: View {
                                 )
                                 .frame(width: 100, height: 100)
                                 .rotationEffect(.degrees(isAnalyzing ? 360 : 0))
-                                .animation(
-                                    Animation.linear(duration: 1)
-                                        .repeatForever(autoreverses: false),
-                                    value: isAnalyzing
-                                )
+                            .animation(
+                                Animation.linear(duration: 1)
+                                    .repeatForever(autoreverses: false),
+                                value: isAnalyzing
+                            )
                             
                             // 中心图标
                             Image(systemName: "sparkles")
                                 .font(.system(size: 30))
                                 .foregroundColor(Color("AppPrimary"))
                                 .scaleEffect(isAnalyzing ? 1.1 : 0.9)
-                                .animation(
-                                    Animation.easeInOut(duration: 1)
-                                        .repeatForever(autoreverses: true),
-                                    value: isAnalyzing
-                                )
+                            .animation(
+                                Animation.easeInOut(duration: 1)
+                                    .repeatForever(autoreverses: true),
+                                value: isAnalyzing
+                            )
                         }
                         .padding(.bottom, 30)
                         
@@ -638,44 +637,33 @@ struct CreateDecisionView: View {
                                 .font(.system(size: 22, weight: .semibold))
                             
                             // 分析步骤显示
-                            VStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 ForEach(analysisSteps.indices, id: \.self) { index in
-                                    HStack(spacing: 8) {
+                                    HStack(alignment: .center, spacing: 8) {
                                         // 步骤完成图标
                                         ZStack {
                                             Circle()
                                                 .fill(Color.green.opacity(0.2))
                                                 .frame(width: 24, height: 24)
-                                                .scaleEffect(index < currentAnalysisStep ? 1 : 0)
-                                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: currentAnalysisStep)
                                             
                                             Image(systemName: "checkmark.circle.fill")
                                                 .foregroundColor(.green)
                                                 .opacity(index < currentAnalysisStep ? 1 : 0)
-                                                .scaleEffect(index < currentAnalysisStep ? 1 : 0.5)
-                                                .animation(.spring(response: 0.3, dampingFraction: 0.6).delay(0.1), value: currentAnalysisStep)
                                         }
                                         
                                         Text(analysisSteps[index])
                                             .font(.system(size: 15))
-                                            .foregroundColor(index < currentAnalysisStep ? .secondary : .primary)
-                                            .opacity(index <= currentAnalysisStep ? 1 : 0.5)
-                                            .animation(.easeInOut(duration: 0.3), value: currentAnalysisStep)
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(1)
+                                            .fixedSize(horizontal: false, vertical: true)
                                         
-                                        if index == currentAnalysisStep - 1 {
-                                            // 当前步骤的动画指示器
-                                            ProgressView()
-                                                .scaleEffect(0.7)
-                                                .tint(Color("AppPrimary"))
-                                        }
+                                        Spacer()
                                     }
                                     .opacity(index <= currentAnalysisStep ? 1 : 0.5)
-                                    .offset(x: index <= currentAnalysisStep ? 0 : 20)
-                                    .animation(.easeInOut(duration: 0.3), value: currentAnalysisStep)
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 40)
+                            .padding(.horizontal, 20)
                         }
                     }
                 }
@@ -685,10 +673,18 @@ struct CreateDecisionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
-            withAnimation {
-                isAnalyzing = true
+            DispatchQueue.main.async {
+                withAnimation {
+                    isAnalyzing = true
+                }
             }
-            setupAnalysis()
+        }
+        .onDisappear {
+            DispatchQueue.main.async {
+                withAnimation {
+                    isAnalyzing = false
+                }
+            }
         }
     }
     
@@ -696,7 +692,13 @@ struct CreateDecisionView: View {
         // 重置分析状态
         analysisSteps = analysisStepMessages
         currentAnalysisStep = 0
-        isAnalyzing = true
+        
+        // 在主线程上更新UI状态
+        DispatchQueue.main.async {
+            withAnimation {
+                isAnalyzing = true
+            }
+        }
         
         // 模拟分析进度
         for step in 0..<analysisStepMessages.count {
@@ -815,7 +817,6 @@ struct CreateDecisionView: View {
         }
         
         currentStep = .analyzing
-        isAnalyzing = true
         showingError = false
         
         let newDecision = Decision(
@@ -849,9 +850,9 @@ struct CreateDecisionView: View {
                 }
             } catch {
                 await MainActor.run {
-                    isAnalyzing = false
-                    errorMessage = (error as? AIService.AIServiceError)?.localizedDescription ?? error.localizedDescription
                     withAnimation {
+                        isAnalyzing = false
+                        errorMessage = (error as? AIService.AIServiceError)?.localizedDescription ?? error.localizedDescription
                         showingError = true
                     }
                 }
