@@ -358,7 +358,7 @@ struct SettingsView: View {
                                                 }
                                                 .padding(.horizontal, 16)
                                                 .padding(.vertical, 12)
-                                                .frame(maxWidth: .infinity) // 使用与上面相同的容器宽度
+                                                .frame(maxWidth: .infinity, alignment: .leading) // 使用与上面相同的容器宽度，并左对齐
                                                 .background(Color("AppPrimary").opacity(0.05))
                                                 .cornerRadius(8)
                                                 .padding(.horizontal, 16)
