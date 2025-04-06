@@ -1,0 +1,2 @@
+// Disable asset symbol generation
+ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO
