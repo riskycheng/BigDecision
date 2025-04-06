@@ -187,7 +187,7 @@ struct SettingsView: View {
     private var filteredSettings: [String: [String]] {
         let allSettings = [
             "个人设置": ["你的名字", "启用通知", "深色模式"],
-            "AI设置": ["AI模型", "高级AI设置"],
+            "AI设置": ["AI模型"],
             "数据管理": ["重置所有决定", "导出数据"],
             "关于": ["关于大决定", "隐私政策", "使用条款"]
         ]
@@ -317,8 +317,11 @@ struct SettingsView: View {
                                     SettingsSectionView(title: section) {
                                         VStack(spacing: 16) {
                                             VStack(alignment: .leading, spacing: 8) {
-                                                Text("AI模型")
-                                                    .font(.system(size: 15, weight: .medium))
+                                                Text("AI · 智慧助手")
+                                                    .font(.system(size: 17, weight: .semibold))
+                                                    .foregroundColor(Color("AppPrimary"))
+                                                    .padding(.horizontal, 16)
+                                                    .padding(.top, 12)
                                                 
                                                 Picker("AI模型", selection: $aiModelType) {
                                                     Text("标准").tag("标准")
@@ -326,22 +329,43 @@ struct SettingsView: View {
                                                     Text("高级").tag("高级")
                                                 }
                                                 .pickerStyle(SegmentedPickerStyle())
+                                                .padding(.horizontal, 16)
+                                                .padding(.top, 4)
+                                                .onChange(of: aiModelType) { _ in
+                                                    // 模型类型改变时触发视图更新
+                                                }
                                             }
-                                            .padding(.horizontal, 16)
-                                            .padding(.top, 12)
                                             
-                                            NavigationLink(destination: AISettingsDetailView()) {
-                                                HStack {
-                                                    Text("高级AI设置")
-                                                    Spacer()
-                                                    Image(systemName: "chevron.right")
+                                            // 模型特性卡片
+                                            if let modelType = AIModelType(rawValue: aiModelType) {
+                                                let features = modelType.features
+                                                VStack(alignment: .leading, spacing: 4) {
+                                                    HStack(spacing: 10) {
+                                                        Image(systemName: features.icon)
+                                                            .font(.system(size: 20))
+                                                            .foregroundColor(Color("AppPrimary"))
+                                                            .frame(width: 24, height: 24)
+                                                        
+                                                        Text(features.title)
+                                                            .font(.system(size: 16, weight: .medium))
+                                                    }
+                                                    .padding(.bottom, 4)
+                                                    
+                                                    Text(features.description)
                                                         .font(.system(size: 14))
                                                         .foregroundColor(.secondary)
+                                                        .lineLimit(2)
                                                 }
                                                 .padding(.horizontal, 16)
                                                 .padding(.vertical, 12)
+                                                .frame(maxWidth: .infinity) // 使用与上面相同的容器宽度
+                                                .background(Color("AppPrimary").opacity(0.05))
+                                                .cornerRadius(8)
+                                                .padding(.horizontal, 16)
+                                                .padding(.bottom, 8)
                                             }
                                         }
+                                        .padding(.vertical, 8)
                                     }
                                 }
                                 

@@ -1,11 +1,41 @@
 import Foundation
 import Network
+import SwiftUI
+
+enum AIModelType: String, CaseIterable {
+    case standard = "标准"
+    case professional = "专业"
+    case advanced = "高级"
+    
+    var modelName: String {
+        switch self {
+        case .standard:
+            return "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
+        case .professional:
+            return "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
+        case .advanced:
+            return "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
+        }
+    }
+    
+    var features: (icon: String, title: String, description: String) {
+        switch self {
+        case .standard:
+            return ("bolt", "简洁高效", "快速分析决策选项，提供简明有效的建议")
+        case .professional:
+            return ("chart.bar.xaxis", "精准科学", "科学量化各种因素，提供精准深入的决策依据")
+        case .advanced:
+            return ("brain.head.profile", "全面彻底", "多维度全面分析，提供最全面的决策建议")
+        }
+    }
+}
 
 class AIService {
     private let apiKey = "sk-ezwzqwedwhtnbyitbnyohvzanpitqqlnpjucejddpozmpjxj"  // DeepSeek API Key
     private let baseURL = "https://api.siliconflow.cn/v1/chat/completions"
     private let monitor = NWPathMonitor()
     private var isNetworkAvailable = true
+    @AppStorage("aiModelType") var aiModelType: String = AIModelType.professional.rawValue
     
     enum AIServiceError: Error {
         case networkNotAvailable
@@ -115,8 +145,11 @@ class AIService {
             Message(role: "user", content: userPrompt)
         ]
         
+        // 获取当前选择的模型类型
+        let modelType = AIModelType(rawValue: aiModelType) ?? .professional
+        
         let request = ChatRequest(
-            model: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+            model: modelType.modelName,
             messages: messages,
             stream: false,
             max_tokens: 1024,
