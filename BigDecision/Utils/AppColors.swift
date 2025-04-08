@@ -17,7 +17,7 @@ struct AppColors {
         #if os(iOS)
         return UITraitCollection.current.userInterfaceStyle == .dark ? primaryDark : primaryLight
         #else
-        let isDarkMode = NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let isDarkMode = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         return isDarkMode ? primaryDark : primaryLight
         #endif
     }
@@ -26,7 +26,7 @@ struct AppColors {
         #if os(iOS)
         return UITraitCollection.current.userInterfaceStyle == .dark ? secondaryDark : secondaryLight
         #else
-        let isDarkMode = NSAppearance.current.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let isDarkMode = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         return isDarkMode ? secondaryDark : secondaryLight
         #endif
     }

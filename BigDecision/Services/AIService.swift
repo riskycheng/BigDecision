@@ -134,7 +134,7 @@ class AIService {
         选项B：\(decision.options[1].title)
         选项B描述：\(decision.options[1].description)
         
-        补充信息：\(decision.additionalInfo ?? "无")
+        补充信息：\(decision.additionalInfo.isEmpty ? "无" : decision.additionalInfo)
         重要程度：\(decision.importance)/5
         决策时间框架：\(decision.timeFrame.rawValue)
         决策类型：\(decision.decisionType.rawValue)
