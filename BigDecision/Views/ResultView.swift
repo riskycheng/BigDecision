@@ -201,6 +201,9 @@ struct ResultView: View {
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
     @State private var showingDetailDialog = false
+    @State private var showingReanalyzeConfirmation = false
+    @State private var selectedShareContentType: ShareContentType = .summary
+    @State private var showingCreateDecision = false
     #if canImport(UIKit)
     @State private var exportImage: UIImage?
     #endif
@@ -365,8 +368,9 @@ struct ResultView: View {
                             #endif
                             
                             // 分享按钮
-                            #if canImport(UIKit)
-                            Button(action: { showingShareSheet = true }) {
+                            Button(action: {
+                                showingShareSheet = true
+                            }) {
                                 VStack(spacing: 8) {
                                     Image(systemName: "square.and.arrow.up")
                                         .font(.system(size: 24))
@@ -376,13 +380,10 @@ struct ResultView: View {
                                         .foregroundColor(.secondary)
                                 }
                             }
-                            #endif
                             
                             // 重新分析按钮
                             Button(action: {
-                                var updatedDecision = decision
-                                updatedDecision.result = nil
-                                decisionStore.updateDecision(updatedDecision)
+                                showingReanalyzeConfirmation = true
                             }) {
                                 VStack(spacing: 8) {
                                     Image(systemName: "arrow.clockwise")
@@ -423,18 +424,52 @@ struct ResultView: View {
             }
         }
         #if canImport(UIKit)
-        .sheet(isPresented: $showingShareSheet) {
-            ShareSheet(items: [generateShareText()])
+        .actionSheet(isPresented: $showingExportOptions) {
+            ActionSheet(
+                title: Text("选择导出格式"),
+                buttons: [
+                    .default(Text("图片")) {
+                        if let image = exportDecisionAsImage() {
+                            exportImage = image
+                            showingExportedImage = true
+                        }
+                    },
+                    .default(Text("PDF")) {
+                        exportAsPDF()
+                    },
+                    .default(Text("文本")) {
+                        exportAsText()
+                    },
+                    .cancel(Text("取消"))
+                ]
+            )
         }
-        .alert(isPresented: $showingExportOptions) {
+        .actionSheet(isPresented: $showingShareSheet) {
+            ActionSheet(
+                title: Text("选择分享内容"),
+                buttons: [
+                    .default(Text("简要总结")) {
+                        selectedShareContentType = .summary
+                        shareContent()
+                    },
+                    .default(Text("详细报告")) {
+                        selectedShareContentType = .detailed
+                        shareContent()
+                    },
+                    .default(Text("分享图片")) {
+                        selectedShareContentType = .image
+                        shareContent()
+                    },
+                    .cancel(Text("取消"))
+                ]
+            )
+        }
+        .alert(isPresented: $showingReanalyzeConfirmation) {
             Alert(
-                title: Text("导出决策"),
-                message: Text("生成决策分析图片"),
-                primaryButton: .default(Text("预览图片")) {
-                    if let image = exportDecisionAsImage() {
-                        exportImage = image
-                        showingExportedImage = true
-                    }
+                title: Text("确认重新分析"),
+                message: Text("是否要使用当前的选项重新进行分析？您可以在分析前修改相关信息。"),
+                primaryButton: .default(Text("确定")) {
+                    showingCreateDecision = true
                 },
                 secondaryButton: .cancel(Text("取消"))
             )
@@ -445,6 +480,20 @@ struct ResultView: View {
             }
         }
         #endif
+        .fullScreenCover(isPresented: $showingCreateDecision) {
+            CreateDecisionView(
+                initialDecision: Decision(
+                    title: decision.title,
+                    options: decision.options,
+                    additionalInfo: decision.additionalInfo,
+                    decisionType: decision.decisionType,
+                    importance: decision.importance,
+                    timeFrame: decision.timeFrame,
+                    result: nil,
+                    createdAt: Date()
+                )
+            )
+        }
         .sheet(isPresented: $showingDetailDialog) {
             if let result = decision.result {
                 DetailDialog(title: "分析理由", content: result.reasoning)
@@ -473,6 +522,54 @@ struct ResultView: View {
         #endif
     }
     
+    private func generateShareContent(type: ShareContentType) -> Any {
+        switch type {
+        case .summary:
+            return generateShareText()
+        case .detailed:
+            return generateDetailedReport()
+        case .image:
+            #if canImport(UIKit)
+            return exportDecisionAsImage() ?? UIImage()
+            #else
+            return generateShareText()
+            #endif
+        }
+    }
+
+    private func generateDetailedReport() -> String {
+        guard let result = decision.result else { return "" }
+        
+        let recommendedOption = getRecommendedOption(result.recommendation)
+        
+        return """
+        详细决策分析报告
+        
+        决策标题: \(decision.title)
+        
+        选项比较:
+        \(decision.options.map { option in
+            """
+            
+            \(option.title):
+            描述: \(option.description)
+            优点:
+            \(option.id == decision.options[0].id ? result.prosA : result.prosB)
+            缺点:
+            \(option.id == decision.options[0].id ? result.consA : result.consB)
+            """
+        }.joined(separator: "\n\n"))
+        
+        AI推荐: \(recommendedOption.title)
+        置信度: \(Int(result.confidence * 100))%
+        
+        分析理由:
+        \(result.reasoning)
+        
+        决策时间: \(decision.createdAt.formatted())
+        """
+    }
+
     private func generateShareText() -> String {
         guard let result = decision.result else { return "" }
         
@@ -515,7 +612,82 @@ struct ResultView: View {
         
         return image
     }
+
+    private func exportAsPDF() {
+        // 实现 PDF 导出逻辑
+        let pdfData = generatePDFData()
+        let temporaryDirectoryURL = FileManager.default.temporaryDirectory
+        let pdfURL = temporaryDirectoryURL.appendingPathComponent("\(decision.title)_分析报告.pdf")
+        
+        do {
+            try pdfData.write(to: pdfURL)
+            let activityVC = UIActivityViewController(activityItems: [pdfURL], applicationActivities: nil)
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                rootVC.present(activityVC, animated: true)
+            }
+        } catch {
+            print("PDF导出失败: \(error)")
+        }
+    }
+
+    private func exportAsText() {
+        let text = generateDetailedReport()
+        // 实现文本导出逻辑
+        #if canImport(UIKit)
+        let temporaryDirectoryURL = FileManager.default.temporaryDirectory
+        let textURL = temporaryDirectoryURL.appendingPathComponent("\(decision.title)_分析报告.txt")
+        
+        do {
+            try text.write(to: textURL, atomically: true, encoding: .utf8)
+            let activityVC = UIActivityViewController(activityItems: [textURL], applicationActivities: nil)
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                rootVC.present(activityVC, animated: true)
+            }
+        } catch {
+            print("文本导出失败: \(error)")
+        }
+        #endif
+    }
+
+    private func generatePDFData() -> Data {
+        let format = UIGraphicsPDFRendererFormat()
+        let pageRect = CGRect(x: 0, y: 0, width: 595.2, height: 841.8) // A4 尺寸
+        let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
+        
+        let data = renderer.pdfData { context in
+            context.beginPage()
+            
+            let text = generateDetailedReport()
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 12),
+                .foregroundColor: UIColor.black
+            ]
+            
+            text.draw(with: CGRect(x: 50, y: 50, width: pageRect.width - 100, height: pageRect.height - 100),
+                     options: .usesLineFragmentOrigin,
+                     attributes: attributes,
+                     context: nil)
+        }
+        
+        return data
+    }
     #endif
+
+    private func shareContent() {
+        let content = generateShareContent(type: selectedShareContentType)
+        #if canImport(UIKit)
+        let activityVC = UIActivityViewController(activityItems: [content], applicationActivities: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            rootVC.present(activityVC, animated: true)
+        }
+        #endif
+    }
 }
 
 struct ExportReportView: View {

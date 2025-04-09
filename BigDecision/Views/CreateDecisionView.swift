@@ -3,6 +3,7 @@ import SwiftUI
 struct CreateDecisionView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var decisionStore: DecisionStore
+    @Environment(\.dismiss) private var dismiss
     
     // 步骤状态
     enum Step: Int, CaseIterable {
@@ -38,14 +39,18 @@ struct CreateDecisionView: View {
         }
     }
     
-    @State private var currentStep = Step.title
-    @State private var title = ""
+    // 初始决策数据
+    let initialDecision: Decision?
+    
+    // 状态变量
+    @State private var currentStep: Step = .title
+    @State private var title: String = ""
     @State private var isEditingTitle = false  // 新增状态控制输入框显示
     @State private var tempTitle = ""          // 新增临时标题存储
     @State private var options: [Option] = []
-    @State private var currentOption = ""
+    @State private var currentOption: String = ""
     @State private var currentOptionDescription = ""
-    @State private var additionalInfo = ""
+    @State private var additionalInfo: String = ""
     @State private var showingAddOption = false
     @State private var decision: Decision?
     @State private var isAnalyzing = false
@@ -66,6 +71,24 @@ struct CreateDecisionView: View {
     ]
     @State private var editingOptionIndex: Int?
     @State private var editingOption: Option?
+    @State private var decisionType: Decision.DecisionType = .other
+    @State private var importance: Int = 3
+    @State private var timeFrame: Decision.TimeFrame = .days
+    
+    init(initialDecision: Decision? = nil) {
+        self.initialDecision = initialDecision
+        // 初始化所有状态变量
+        if let initial = initialDecision {
+            _title = State(initialValue: initial.title)
+            _options = State(initialValue: initial.options)
+            _additionalInfo = State(initialValue: initial.additionalInfo)
+            _decisionType = State(initialValue: initial.decisionType)
+            _importance = State(initialValue: initial.importance)
+            _timeFrame = State(initialValue: initial.timeFrame)
+        }
+        // 确保从第一步开始
+        _currentStep = State(initialValue: .title)
+    }
     
     var body: some View {
         NavigationView {
@@ -146,6 +169,9 @@ struct CreateDecisionView: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         #endif
+        .onAppear {
+            setupAnalysisSteps()
+        }
     }
     
     private var navigationTitle: String {
@@ -903,9 +929,9 @@ struct CreateDecisionView: View {
             title: title,
             options: options,
             additionalInfo: additionalInfo,
-            decisionType: .other,
-            importance: 3,
-            timeFrame: .days,
+            decisionType: decisionType,
+            importance: importance,
+            timeFrame: timeFrame,
             createdAt: Date()
         )
         
@@ -938,6 +964,11 @@ struct CreateDecisionView: View {
                 }
             }
         }
+    }
+    
+    // 在视图加载时初始化分析步骤
+    private func setupAnalysisSteps() {
+        // 实现分析步骤的初始化逻辑
     }
 }
 

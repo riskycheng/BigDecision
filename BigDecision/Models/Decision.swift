@@ -72,4 +72,10 @@ struct Decision: Identifiable, Codable {
         case month = "一个月内"
         case longTerm = "长期考虑"
     }
+}
+
+enum ShareContentType {
+    case summary
+    case detailed
+    case image
 } 
