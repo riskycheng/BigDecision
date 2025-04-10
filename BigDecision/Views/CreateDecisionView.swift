@@ -106,9 +106,19 @@ struct CreateDecisionView: View {
                 VStack(spacing: 0) {
                     // 顶部导航栏
                     HStack {
-                        // 占位视图保持对称
-                        Color.clear
+                        // 左侧关闭按钮（仅在结果页面显示）
+                        if currentStep == .result {
+                            Button(action: { dismiss() }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(.gray)
+                            }
                             .frame(width: 32, height: 32)
+                        } else {
+                            // 占位视图保持对称
+                            Color.clear
+                                .frame(width: 32, height: 32)
+                        }
                         
                         Spacer()
                         
@@ -139,7 +149,30 @@ struct CreateDecisionView: View {
                                 analyzingView
                             case .result:
                                 if let decision = decision {
-                                    ResultView(decision: decision)
+                                    VStack {
+                                        HStack {
+                                            Button(action: { dismiss() }) {
+                                                HStack(spacing: 4) {
+                                                    Image(systemName: "xmark.circle.fill")
+                                                    Text("完成")
+                                                }
+                                                .font(.system(size: 16, weight: .medium))
+                                                .foregroundColor(Color("AppPrimary"))
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 6)
+                                                .background(
+                                                    Capsule()
+                                                        .fill(Color("AppPrimary").opacity(0.1))
+                                                )
+                                            }
+                                            .padding(.top, 8)
+                                            .padding(.horizontal, 16)
+                                            
+                                            Spacer()
+                                        }
+                                        
+                                        ResultView(decision: decision)
+                                    }
                                 }
                             }
                         }

@@ -449,6 +449,7 @@ struct ResultView: View {
                 title: Text("确认重新分析"),
                 message: Text("是否要使用当前的选项重新进行分析？您可以在分析前修改相关信息。"),
                 primaryButton: .default(Text("确定")) {
+                    // 直接打开新的分析视图
                     showingCreateDecision = true
                 },
                 secondaryButton: .cancel(Text("取消"))
@@ -460,7 +461,7 @@ struct ResultView: View {
             }
         }
         #endif
-        .fullScreenCover(isPresented: $showingCreateDecision) {
+        .sheet(isPresented: $showingCreateDecision) {
             CreateDecisionView(
                 initialDecision: Decision(
                     title: decision.title,
@@ -473,6 +474,7 @@ struct ResultView: View {
                     createdAt: Date()
                 )
             )
+            .interactiveDismissDisabled(false) // 允许下拉关闭
         }
         .sheet(isPresented: $showingDetailDialog) {
             if let result = decision.result {
