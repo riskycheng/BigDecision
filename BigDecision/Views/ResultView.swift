@@ -340,62 +340,42 @@ struct ResultView: View {
                     
                     // 底部操作按钮栏
                     CardView(backgroundColor: Color(UIColor.secondarySystemBackground)) {
-                        HStack(spacing: 20) {
+                        HStack(spacing: 24) {
                             // 收藏按钮
-                            Button(action: toggleFavorite) {
-                                VStack(spacing: 8) {
-                                    Image(systemName: isFavorited ? "star.fill" : "star")
-                                        .font(.system(size: 24))
-                                        .foregroundColor(isFavorited ? .yellow : .gray)
-                                    Text("收藏")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
+                            ActionButton(
+                                icon: isFavorited ? "star.fill" : "star",
+                                label: "收藏",
+                                iconColor: isFavorited ? .yellow : .gray,
+                                action: toggleFavorite
+                            )
                             
                             // 导出按钮
                             #if canImport(UIKit)
-                            Button(action: { showingExportOptions = true }) {
-                                VStack(spacing: 8) {
-                                    Image(systemName: "square.and.arrow.down")
-                                        .font(.system(size: 24))
-                                        .foregroundColor(.gray)
-                                    Text("导出")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
+                            ActionButton(
+                                icon: "square.and.arrow.down",
+                                label: "导出",
+                                action: { showingExportOptions = true }
+                            )
                             #endif
                             
                             // 分享按钮
-                            Button(action: {
-                                showingShareSheet = true
-                            }) {
-                                VStack(spacing: 8) {
-                                    Image(systemName: "square.and.arrow.up")
-                                        .font(.system(size: 24))
-                                        .foregroundColor(.gray)
-                                    Text("分享")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
+                            ActionButton(
+                                icon: "square.and.arrow.up",
+                                label: "分享",
+                                action: { showingShareSheet = true }
+                            )
                             
                             // 重新分析按钮
-                            Button(action: {
-                                showingReanalyzeConfirmation = true
-                            }) {
-                                VStack(spacing: 8) {
-                                    Image(systemName: "arrow.clockwise")
-                                        .font(.system(size: 24))
-                                        .foregroundColor(.gray)
-                                    Text("重新分析")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
+                            ActionButton(
+                                icon: "arrow.clockwise",
+                                label: "重新分析",
+                                action: { showingReanalyzeConfirmation = true }
+                            )
                         }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
                     }
+                    .padding(.bottom, UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0)
                 }
             }
             .padding()
