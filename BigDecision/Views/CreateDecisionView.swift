@@ -948,7 +948,15 @@ struct CreateDecisionView: View {
                     var updatedDecision = newDecision
                     updatedDecision.result = analysisResult
                     self.decision = updatedDecision
-                    self.decisionStore.addDecision(updatedDecision)
+                    
+                    // 判断是新决策还是重新分析
+                    if initialDecision != nil {
+                        // 重新分析时更新现有决策
+                        self.decisionStore.updateDecision(updatedDecision)
+                    } else {
+                        // 新决策时添加决策
+                        self.decisionStore.addDecision(updatedDecision)
+                    }
                     withAnimation {
                         self.currentStep = .result
                         self.isAnalyzing = false

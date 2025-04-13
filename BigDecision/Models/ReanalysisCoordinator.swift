@@ -11,8 +11,9 @@ class ReanalysisCoordinator: ObservableObject {
     private init() {}
     
     func startReanalysis(with decision: Decision) {
-        // 创建一个新的决策对象，保留原始决策的所有信息，但清除结果
+        // 创建一个新的决策对象，保留原始决策的所有信息（包括 ID），但清除结果
         self.decisionToReanalyze = Decision(
+            id: decision.id, // 保留原始决策的 ID
             title: decision.title,
             options: decision.options,
             additionalInfo: decision.additionalInfo,
@@ -20,7 +21,8 @@ class ReanalysisCoordinator: ObservableObject {
             importance: decision.importance,
             timeFrame: decision.timeFrame,
             result: nil,
-            createdAt: Date()
+            createdAt: decision.createdAt, // 保留原始创建时间
+            isFavorited: decision.isFavorited // 保留收藏状态
         )
         
         // 短暂延迟以确保动画流畅
