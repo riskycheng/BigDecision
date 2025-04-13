@@ -9,10 +9,12 @@ import SwiftUI
 #if canImport(UIKit)
 import UIKit
 #endif
+import Foundation
 
 struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showWelcome = true
+    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     
     var body: some View {
         Group {
@@ -59,6 +61,17 @@ struct ContentView: View {
             // 检查是否是首次启动
             let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
             showWelcome = !hasLaunchedBefore
+        }
+        // 监听重新分析请求并从底部弹出新的分析视图
+        .sheet(isPresented: $reanalysisCoordinator.isShowingReanalysis) {
+            if let decisionToReanalyze = reanalysisCoordinator.decisionToReanalyze {
+                CreateDecisionView(initialDecision: decisionToReanalyze)
+                    .environmentObject(DecisionStore())
+                    .interactiveDismissDisabled(false)
+                    .onDisappear {
+                        reanalysisCoordinator.endReanalysis()
+                    }
+            }
         }
     }
 }

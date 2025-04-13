@@ -197,11 +197,13 @@ struct CardView<Content: View>: View {
 
 struct ResultView: View {
     let decision: Decision
+    @Environment(\.dismiss) private var dismiss
     @State private var isFavorited: Bool
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
     @State private var showingDetailDialog = false
     @State private var showingReanalyzeConfirmation = false
+    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     @State private var selectedShareContentType: ShareContentType = .summary
     @State private var showingCreateDecision = false
     #if canImport(UIKit)
@@ -449,8 +451,10 @@ struct ResultView: View {
                 title: Text("确认重新分析"),
                 message: Text("是否要使用当前的选项重新进行分析？您可以在分析前修改相关信息。"),
                 primaryButton: .default(Text("确定")) {
-                    // 直接打开新的分析视图
-                    showingCreateDecision = true
+                    // 使用ReanalysisCoordinator进行重新分析
+                    reanalysisCoordinator.startReanalysis(with: decision)
+                    // 关闭当前视图
+                    dismiss()
                 },
                 secondaryButton: .cancel(Text("取消"))
             )
@@ -461,21 +465,7 @@ struct ResultView: View {
             }
         }
         #endif
-        .sheet(isPresented: $showingCreateDecision) {
-            CreateDecisionView(
-                initialDecision: Decision(
-                    title: decision.title,
-                    options: decision.options,
-                    additionalInfo: decision.additionalInfo,
-                    decisionType: decision.decisionType,
-                    importance: decision.importance,
-                    timeFrame: decision.timeFrame,
-                    result: nil,
-                    createdAt: Date()
-                )
-            )
-            .interactiveDismissDisabled(false) // 允许下拉关闭
-        }
+
         .sheet(isPresented: $showingDetailDialog) {
             if let result = decision.result {
                 DetailDialog(title: "分析理由", content: result.reasoning)

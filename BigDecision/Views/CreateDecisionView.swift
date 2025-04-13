@@ -86,9 +86,13 @@ struct CreateDecisionView: View {
             _decisionType = State(initialValue: initial.decisionType)
             _importance = State(initialValue: initial.importance)
             _timeFrame = State(initialValue: initial.timeFrame)
+            
+            // 如果是重新分析，从选项步骤开始
+            _currentStep = State(initialValue: .options)
+        } else {
+            // 新决策从第一步开始
+            _currentStep = State(initialValue: .title)
         }
-        // 确保从第一步开始
-        _currentStep = State(initialValue: .title)
     }
     
     var body: some View {
@@ -106,20 +110,6 @@ struct CreateDecisionView: View {
                 VStack(spacing: 0) {
                     // 顶部导航栏
                     HStack {
-                        // 左侧关闭按钮（仅在结果页面显示）
-                        if currentStep == .result {
-                            Button(action: { dismiss() }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundColor(.gray)
-                            }
-                            .frame(width: 32, height: 32)
-                        } else {
-                            // 占位视图保持对称
-                            Color.clear
-                                .frame(width: 32, height: 32)
-                        }
-                        
                         Spacer()
                         
                         // 进度指示器
@@ -127,10 +117,6 @@ struct CreateDecisionView: View {
                             .frame(width: 250)
                         
                         Spacer()
-                        
-                        // 占位视图保持对称
-                        Color.clear
-                            .frame(width: 32, height: 32)
                     }
                     .padding(.horizontal)
                     .padding(.top, 16)
@@ -150,26 +136,7 @@ struct CreateDecisionView: View {
                             case .result:
                                 if let decision = decision {
                                     VStack {
-                                        HStack {
-                                            Button(action: { dismiss() }) {
-                                                HStack(spacing: 4) {
-                                                    Image(systemName: "xmark.circle.fill")
-                                                    Text("完成")
-                                                }
-                                                .font(.system(size: 16, weight: .medium))
-                                                .foregroundColor(Color("AppPrimary"))
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 6)
-                                                .background(
-                                                    Capsule()
-                                                        .fill(Color("AppPrimary").opacity(0.1))
-                                                )
-                                            }
-                                            .padding(.top, 8)
-                                            .padding(.horizontal, 16)
-                                            
-                                            Spacer()
-                                        }
+
                                         
                                         ResultView(decision: decision)
                                     }
