@@ -93,7 +93,7 @@ struct HistoryView: View {
                             
                             // 搜索栏
                             SearchBar(text: $searchText, placeholder: "搜索决策...")
-                                .padding(.top, 12)
+                                .padding(.top, 10)
                         }
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity, alignment: .leading)

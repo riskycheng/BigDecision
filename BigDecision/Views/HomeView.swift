@@ -63,7 +63,7 @@ struct HomeView: View {
                             .cornerRadius(12)
                             .shadow(color: Color.black.opacity(0.1), radius: 5)
                         }
-                        .padding(.top, 12)
+                        .padding(.top, 10)
                     }
                     .padding(.horizontal)
                     .frame(maxWidth: .infinity)
