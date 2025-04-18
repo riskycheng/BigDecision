@@ -75,6 +75,7 @@ struct CreateDecisionView: View {
     @State private var decisionType: Decision.DecisionType = .other
     @State private var importance: Int = 3
     @State private var timeFrame: Decision.TimeFrame = .days
+    @State private var selectedDecisionTypeFilter: Decision.DecisionType = .other
     
     init(initialDecision: Decision? = nil) {
         self.initialDecision = initialDecision
@@ -518,6 +519,27 @@ struct CreateDecisionView: View {
                 .font(.system(size: 17))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                
+            // 决策类型选择标签
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(Decision.DecisionType.allCases, id: \.self) { type in
+                        DecisionTypeFilterButton(
+                            title: type.rawValue,
+                            icon: type.icon,
+                            isSelected: selectedDecisionTypeFilter == type,
+                            action: {
+                                withAnimation {
+                                    selectedDecisionTypeFilter = type
+                                    decisionType = type
+                                }
+                            }
+                        )
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .padding(.vertical, 5)
             
             Button(action: {
                 withAnimation {
@@ -1313,6 +1335,31 @@ struct InputSheet: View {
 #Preview {
     CreateDecisionView()
         .environmentObject(DecisionStore())
+}
+
+// 决策类型过滤按钮
+struct DecisionTypeFilterButton: View {
+    let title: String
+    let icon: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                
+                Text(title)
+                    .font(.subheadline)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(isSelected ? Color("AppPrimary") : Color.gray.opacity(0.1))
+            .foregroundColor(isSelected ? .white : .primary)
+            .cornerRadius(20)
+        }
+    }
 }
 
 // 添加获取渐变色的函数

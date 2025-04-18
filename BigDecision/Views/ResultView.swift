@@ -451,10 +451,13 @@ struct ResultView: View {
                 title: Text("确认重新分析"),
                 message: Text("是否要使用当前的选项重新进行分析？您可以在分析前修改相关信息。"),
                 primaryButton: .default(Text("确定")) {
-                    // 使用ReanalysisCoordinator进行重新分析
+                    // 先启动重新分析过程
                     reanalysisCoordinator.startReanalysis(with: decision)
-                    // 关闭当前视图
-                    dismiss()
+                    
+                    // 等待短暂时间再关闭当前视图，确保协调器有足够时间准备
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        dismiss()
+                    }
                 },
                 secondaryButton: .cancel(Text("取消"))
             )

@@ -12,13 +12,14 @@ class ReanalysisCoordinator: ObservableObject {
     private init() {}
     
     func startReanalysis(with decision: Decision) {
-        // 防止重复触发
-        guard !isProcessing else { return }
-        isProcessing = true
+        print("Starting reanalysis for decision: \(decision.id)")
         
-        // 确保先重置状态
-        self.isShowingReanalysis = false
-        self.decisionToReanalyze = nil
+        // 防止重复触发
+        guard !isProcessing else {
+            print("Reanalysis already in progress, ignoring request")
+            return 
+        }
+        isProcessing = true
         
         // 创建一个新的决策对象，保留原始决策的所有信息（包括 ID），但清除结果
         let reanalysisDecision = Decision(
@@ -34,25 +35,42 @@ class ReanalysisCoordinator: ObservableObject {
             isFavorited: decision.isFavorited // 保留收藏状态
         )
         
-        // 短暂延迟以确保动画流畅
-        // 这个延迟允许当前视图先完全关闭，然后再显示重新分析视图
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        // 先完全重置状态，然后设置新的决策
+        self.decisionToReanalyze = nil
+        self.isShowingReanalysis = false
+        
+        // 等待一个帧，确保状态已重置
+        DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            
+            // 然后设置新的决策并触发重新分析
             self.decisionToReanalyze = reanalysisDecision
-            self.isShowingReanalysis = true
-            self.isProcessing = false
+            
+            // 短暂延迟以确保动画流畅
+            // 这个延迟允许当前视图先完全关闭，然后再显示重新分析视图
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+                guard let self = self else { return }
+                print("Setting isShowingReanalysis to true")
+                self.isShowingReanalysis = true
+                self.isProcessing = false
+            }
         }
     }
     
     func endReanalysis() {
+        print("Ending reanalysis")
+        
         // 首先将isShowingReanalysis设置为false，这会导致sheet关闭
         isShowingReanalysis = false
         
+        // 立即重置处理状态，确保可以立即开始新的重新分析
+        isProcessing = false
+        
         // 短暂延迟后清除决策数据，确保视图已完全关闭
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self else { return }
+            print("Clearing decisionToReanalyze")
             self.decisionToReanalyze = nil
-            self.isProcessing = false // 确保重置处理状态
         }
     }
 }
