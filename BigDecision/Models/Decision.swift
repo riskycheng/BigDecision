@@ -39,6 +39,7 @@ struct Decision: Identifiable, Codable {
         let consA: [String]
         let prosB: [String]
         let consB: [String]
+        var thinkingProcess: String? // 思考过程
     }
     
     enum DecisionType: String, Codable, CaseIterable {

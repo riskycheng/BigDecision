@@ -202,6 +202,7 @@ struct ResultView: View {
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
     @State private var showingDetailDialog = false
+    @State private var showingThinkingProcess = false
     @State private var showingReanalyzeConfirmation = false
     @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     @State private var selectedShareContentType: ShareContentType = .summary
@@ -277,7 +278,10 @@ struct ResultView: View {
                                     .foregroundColor(Color("AppPrimary"))
                             }
                             
-                            Button(action: { showingDetailDialog = true }) {
+                            Button(action: { 
+                                showingThinkingProcess = false
+                                showingDetailDialog = true 
+                            }) {
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(result.reasoning)
                                         .font(.system(size: 17))
@@ -338,6 +342,48 @@ struct ResultView: View {
                                 }
                             }
                         }
+                    }
+                    
+                    // 分析过程卡片 - 显示AI思考链
+                    if let thinkingProcess = result.thinkingProcess, !thinkingProcess.isEmpty {
+                        CardView(backgroundColor: Color(UIColor.systemBackground)) {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "brain.head.profile")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(Color("AppPrimary"))
+                                    Text("分析过程")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color("AppPrimary"))
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        showingThinkingProcess = true
+                                        showingDetailDialog = true
+                                    }) {
+                                        Text("查看全部")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(Color("AppPrimary").opacity(0.8))
+                                    }
+                                }
+                                
+                                // 思考过程预览
+                                Text(thinkingProcess.prefix(300) + (thinkingProcess.count > 300 ? "..." : ""))
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(8)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(12)
+                                    .background(Color(UIColor.secondarySystemBackground))
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .onTapGesture {
+                            showingThinkingProcess = true
+                            showingDetailDialog = true
+                        }
+
                     }
                     
                     // 底部操作按钮栏
@@ -469,9 +515,16 @@ struct ResultView: View {
         }
         #endif
 
-        .sheet(isPresented: $showingDetailDialog) {
+        .sheet(isPresented: $showingDetailDialog, onDismiss: {
+            // Reset the thinking process flag when the sheet is dismissed
+            showingThinkingProcess = false
+        }) {
             if let result = decision.result {
-                DetailDialog(title: "分析理由", content: result.reasoning)
+                if showingThinkingProcess, let thinkingProcess = result.thinkingProcess {
+                    DetailDialog(title: "分析过程", content: thinkingProcess)
+                } else {
+                    DetailDialog(title: "分析理由", content: result.reasoning)
+                }
             }
         }
     }

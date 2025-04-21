@@ -46,6 +46,8 @@ class AIService: ObservableObject {
     @Published var isStreaming = false
     @Published var streamedThinkingSteps: [String] = []
     @Published var streamingComplete = false
+    @Published var isSummarizing = false // 正在总结结果的状态
+    @Published var finalAnswer: String = "" // 最终答案
     private var streamingTask: Task<Void, Never>? = nil
     private var cancellables = Set<AnyCancellable>()
     
@@ -417,7 +419,15 @@ class AIService: ObservableObject {
                         }
                     }
                     
-                    // 流式传输完成后，解析JSON结果
+                    // 流式传输完成后，进入总结阶段
+                    DispatchQueue.main.async {
+                        self.isSummarizing = true
+                        self.finalAnswer = "AI正在总结分析结果..."
+                    }
+                    
+                    // 等待短暂时间，显示总结状态
+                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1秒
+                    
                     let cleanedString = fullContent
                         .replacingOccurrences(of: "```json", with: "")
                         .replacingOccurrences(of: "```", with: "")
@@ -428,11 +438,21 @@ class AIService: ObservableObject {
                     }
                     
                     do {
-                        let result = try JSONDecoder().decode(Decision.Result.self, from: resultData)
+                        var result = try JSONDecoder().decode(Decision.Result.self, from: resultData)
+                        
+                        // 保存思考过程
+                        result.thinkingProcess = fullReasoning
+                        
+                        // 生成最终答案摘要
+                        let option = result.recommendation == "A" ? decision.options[0].title : decision.options[1].title
+                        let confidence = Int(result.confidence * 100)
+                        let finalAnswerText = "\(result.recommendation == "A" ? "选项A" : "选项B"): \(option) (置信度: \(confidence)%)"
                         
                         // 更新UI状态
                         DispatchQueue.main.async {
+                            self.finalAnswer = finalAnswerText
                             self.isStreaming = false
+                            self.isSummarizing = false
                             self.streamingComplete = true
                         }
                         
@@ -466,6 +486,7 @@ class AIService: ObservableObject {
         
         DispatchQueue.main.async {
             self.isStreaming = false
+            self.isSummarizing = false
             self.streamingComplete = true
         }
     }

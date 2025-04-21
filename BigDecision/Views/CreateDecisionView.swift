@@ -753,15 +753,62 @@ struct CreateDecisionView: View {
                         .cornerRadius(12)
                         .padding(.horizontal)
                         
-                        // 底部状态指示
-                        if aiService.streamingComplete {
-                            HStack(spacing: 8) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                                Text("分析完成")
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundColor(.green)
+                        // 总结阶段指示器
+                        if aiService.isSummarizing {
+                            VStack(spacing: 10) {
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle())
+                                        .scaleEffect(0.8)
+                                    
+                                    Text("正在总结分析结果...")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .background(Color(UIColor.tertiarySystemBackground))
+                                .cornerRadius(10)
                             }
+                            .padding(.top, 10)
+                        }
+                        
+                        // 最终答案显示
+                        if aiService.streamingComplete && !aiService.finalAnswer.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                    Text("分析完成")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.green)
+                                }
+                                
+                                Divider()
+                                    .padding(.vertical, 4)
+                                
+                                HStack(spacing: 10) {
+                                    Image(systemName: "lightbulb.fill")
+                                        .foregroundColor(Color("AppPrimary"))
+                                        .font(.system(size: 16))
+                                    
+                                    Text("最终建议")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(Color("AppPrimary"))
+                                }
+                                
+                                Text(aiService.finalAnswer)
+                                    .font(.system(size: 17, weight: .medium))
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color("AppPrimary").opacity(0.1))
+                                    .cornerRadius(8)
+                            }
+                            .padding()
+                            .background(Color(UIColor.tertiarySystemBackground))
+                            .cornerRadius(12)
+                            .padding(.horizontal)
                             .padding(.top, 10)
                         }
                     }
