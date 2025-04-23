@@ -300,7 +300,7 @@ class AIService: ObservableObject {
         
         let userPrompt = """
         决策标题：\(decision.title)
-        
+           
         选项A：\(decision.options[0].title)
         选项A描述：\(decision.options[0].description)
         
@@ -457,11 +457,19 @@ class AIService: ObservableObject {
                         // 尝试使用正则表达式提取各个字段
                         let recommendationRegex = try? NSRegularExpression(pattern: "\"recommendation\":\\s*\"([A-Z])\"")
                         let confidenceRegex = try? NSRegularExpression(pattern: "\"confidence\":\\s*([0-9]\\.[0-9]+)")
-                        let reasoningRegex = try? NSRegularExpression(pattern: "\"reasoning\":\\s*\"([^\"]*)\"")
-                        let prosARegex = try? NSRegularExpression(pattern: "\"prosA\":\\s*\\[([^\\]]*)\\]")
-                        let consARegex = try? NSRegularExpression(pattern: "\"consA\":\\s*\\[([^\\]]*)\\]")
-                        let prosBRegex = try? NSRegularExpression(pattern: "\"prosB\":\\s*\\[([^\\]]*)\\]")
-                        let consBRegex = try? NSRegularExpression(pattern: "\"consB\":\\s*\\[([^\\]]*)\\]")
+                        // 使用更强大的方法提取reasoning字段，能够处理包含括号和引号的复杂中文文本
+                        let reasoningStartPattern = "\"reasoning\":\\s*\""
+                        let reasoningRegex = try? NSRegularExpression(pattern: reasoningStartPattern)
+                        // 使用更精确的模式来提取数组字段
+                        let prosAStartPattern = "\"prosA\":\\s*\\["
+                        let consAStartPattern = "\"consA\":\\s*\\["
+                        let prosBStartPattern = "\"prosB\":\\s*\\["
+                        let consBStartPattern = "\"consB\":\\s*\\["
+                        
+                        let prosARegex = try? NSRegularExpression(pattern: prosAStartPattern)
+                        let consARegex = try? NSRegularExpression(pattern: consAStartPattern)
+                        let prosBRegex = try? NSRegularExpression(pattern: prosBStartPattern)
+                        let consBRegex = try? NSRegularExpression(pattern: consBStartPattern)
                         
                         // 提取字段值的函数
                         func extractValue(regex: NSRegularExpression?, from string: String, defaultValue: String = "") -> String {
@@ -475,11 +483,85 @@ class AIService: ObservableObject {
                         // 提取各个字段的值
                         let recommendation = extractValue(regex: recommendationRegex, from: cleanedString, defaultValue: "A")
                         let confidence = extractValue(regex: confidenceRegex, from: cleanedString, defaultValue: "0.5")
-                        var reasoning = extractValue(regex: reasoningRegex, from: cleanedString, defaultValue: "无法解析分析理由")
-                        let prosA = extractValue(regex: prosARegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
-                        let consA = extractValue(regex: consARegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
-                        let prosB = extractValue(regex: prosBRegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
-                        let consB = extractValue(regex: consBRegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
+                        // 使用更复杂的逻辑提取reasoning字段
+                        var reasoning = "无法解析分析理由"
+                        if let regex = reasoningRegex,
+                           let match = regex.firstMatch(in: cleanedString, range: NSRange(cleanedString.startIndex..., in: cleanedString)),
+                           let startRange = Range(match.range, in: cleanedString) {
+                            let startIndex = cleanedString.index(startRange.upperBound, offsetBy: 0)
+                            var endIndex = startIndex
+                            var depth = 0
+                            var isEscaped = false
+                            
+                            // 从开始位置向后搜索，找到匹配的引号
+                            for index in cleanedString.indices[startIndex...] {
+                                let char = cleanedString[index]
+                                
+                                if char == "\\" && !isEscaped {
+                                    isEscaped = true
+                                    continue
+                                }
+                                
+                                if char == "\"" && !isEscaped {
+                                    if depth == 0 {
+                                        endIndex = index
+                                        break
+                                    }
+                                    depth -= 1
+                                } else if char == "(" || char == "（" {
+                                    depth += 1
+                                } else if char == ")" || char == "）" {
+                                    if depth > 0 {
+                                        depth -= 1
+                                    }
+                                }
+                                
+                                isEscaped = false
+                            }
+                            
+                            if endIndex > startIndex {
+                                reasoning = String(cleanedString[startIndex..<endIndex])
+                            }
+                        }
+                        
+                        // 提取数组的通用函数
+                        func extractArray(regex: NSRegularExpression?, from string: String, defaultValue: String = "\"无法解析列表\"") -> String {
+                            guard let match = regex?.firstMatch(in: string, range: NSRange(string.startIndex..., in: string)),
+                                  let startRange = Range(match.range, in: string) else {
+                                return defaultValue
+                            }
+                            
+                            let startIndex = string.index(startRange.upperBound, offsetBy: 0)
+                            var endIndex = startIndex
+                            var bracketCount = 1  // 已经开始了一个左括号
+                            
+                            // 从数组开始位置向后搜索匹配的右括号
+                            for index in string.indices[startIndex...] {
+                                let char = string[index]
+                                
+                                if char == "[" {
+                                    bracketCount += 1
+                                } else if char == "]" {
+                                    bracketCount -= 1
+                                    if bracketCount == 0 {
+                                        endIndex = index
+                                        break
+                                    }
+                                }
+                            }
+                            
+                            if endIndex > startIndex {
+                                return String(string[startIndex..<endIndex])
+                            }
+                            
+                            return defaultValue
+                        }
+                        
+                        // 提取各个数组字段
+                        let prosA = extractArray(regex: prosARegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
+                        let consA = extractArray(regex: consARegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
+                        let prosB = extractArray(regex: prosBRegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
+                        let consB = extractArray(regex: consBRegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
                         
                         // 处理特殊字符
                         reasoning = reasoning.replacingOccurrences(of: "\"", with: "\\\"")
