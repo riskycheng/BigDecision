@@ -290,7 +290,7 @@ class AIService: ObservableObject {
     // 流式分析方法
     private func analyzeDecisionWithStreaming(_ decision: Decision) async throws -> Decision.Result {
         // 重置流式状态
-        DispatchQueue.main.async {
+        await MainActor.run {
             self.isStreaming = true
             self.streamedThinkingSteps = []
             self.streamingComplete = false
@@ -440,6 +440,8 @@ class AIService: ObservableObject {
                         .replacingOccurrences(of: "```", with: "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                     
+                    print("Original JSON string: \(cleanedString)")
+                    
                     // 尝试使用更强大的方法解析JSON
                     do {
                         // 首先尝试直接解析，看是否是有效的JSON
@@ -452,46 +454,73 @@ class AIService: ObservableObject {
                         // 替换单引号为双引号
                         cleanedString = cleanedString.replacingOccurrences(of: "'", with: "\"")
                         
-                        // 处理字符串内的转义
-                        // 使用正则表达式找到JSON字符串中的值部分并正确转义
-                        let regex = try? NSRegularExpression(pattern: "\"([^\"]*)\"")
-                        if let matches = regex?.matches(in: cleanedString, range: NSRange(cleanedString.startIndex..., in: cleanedString)) {
-                            // 从后向前替换，避免索引变化问题
-                            for match in matches.reversed() {
-                                if let range = Range(match.range(at: 1), in: cleanedString) {
-                                    let value = String(cleanedString[range])
-                                    // 转义特殊字符
-                                    let escapedValue = value
-                                        .replacingOccurrences(of: "\\", with: "\\\\")
-                                        .replacingOccurrences(of: "\n", with: "\\n")
-                                        .replacingOccurrences(of: "\r", with: "\\r")
-                                        .replacingOccurrences(of: "\t", with: "\\t")
-                                        .replacingOccurrences(of: "\"", with: "\\\"")
-                                    
-                                    if value != escapedValue {
-                                        let fullRange = Range(match.range, in: cleanedString)!
-                                        cleanedString = cleanedString.replacingCharacters(in: fullRange, with: "\"\(escapedValue)\"")
-                                    }
-                                }
+                        // 尝试使用正则表达式提取各个字段
+                        let recommendationRegex = try? NSRegularExpression(pattern: "\"recommendation\":\\s*\"([A-Z])\"")
+                        let confidenceRegex = try? NSRegularExpression(pattern: "\"confidence\":\\s*([0-9]\\.[0-9]+)")
+                        let reasoningRegex = try? NSRegularExpression(pattern: "\"reasoning\":\\s*\"([^\"]*)\"")
+                        let prosARegex = try? NSRegularExpression(pattern: "\"prosA\":\\s*\\[([^\\]]*)\\]")
+                        let consARegex = try? NSRegularExpression(pattern: "\"consA\":\\s*\\[([^\\]]*)\\]")
+                        let prosBRegex = try? NSRegularExpression(pattern: "\"prosB\":\\s*\\[([^\\]]*)\\]")
+                        let consBRegex = try? NSRegularExpression(pattern: "\"consB\":\\s*\\[([^\\]]*)\\]")
+                        
+                        // 提取字段值的函数
+                        func extractValue(regex: NSRegularExpression?, from string: String, defaultValue: String = "") -> String {
+                            guard let match = regex?.firstMatch(in: string, range: NSRange(string.startIndex..., in: string)),
+                                  let range = Range(match.range(at: 1), in: string) else {
+                                return defaultValue
                             }
+                            return String(string[range])
                         }
+                        
+                        // 提取各个字段的值
+                        let recommendation = extractValue(regex: recommendationRegex, from: cleanedString, defaultValue: "A")
+                        let confidence = extractValue(regex: confidenceRegex, from: cleanedString, defaultValue: "0.5")
+                        var reasoning = extractValue(regex: reasoningRegex, from: cleanedString, defaultValue: "无法解析分析理由")
+                        let prosA = extractValue(regex: prosARegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
+                        let consA = extractValue(regex: consARegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
+                        let prosB = extractValue(regex: prosBRegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
+                        let consB = extractValue(regex: consBRegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
+                        
+                        // 处理特殊字符
+                        reasoning = reasoning.replacingOccurrences(of: "\"", with: "\\\"")
+                        
+                        // 手动构建一个有效的JSON字符串
+                        cleanedString = "{"
+                        cleanedString += "\"recommendation\": \"\(recommendation)\","
+                        cleanedString += "\"confidence\": \(confidence),"
+                        cleanedString += "\"reasoning\": \"\(reasoning)\","
+                        cleanedString += "\"prosA\": [\(prosA)],"
+                        cleanedString += "\"consA\": [\(consA)],"
+                        cleanedString += "\"prosB\": [\(prosB)],"
+                        cleanedString += "\"consB\": [\(consB)]"
+                        cleanedString += "}"
+                        
+                        print("Reconstructed JSON: \(cleanedString)")
+                        
+                        // 如果仍然无法解析，使用默认结果
+                        let defaultResult = "{"
+                        + "\"recommendation\": \"A\","
+                        + "\"confidence\": 0.5,"
+                        + "\"reasoning\": \"JSON解析错误，请重新分析\","
+                        + "\"prosA\": [\"JSON解析错误\"],"
+                        + "\"consA\": [\"JSON解析错误\"],"
+                        + "\"prosB\": [\"JSON解析错误\"],"
+                        + "\"consB\": [\"JSON解析错误\"]"
+                        + "}"
+                        
+                        guard let defaultData = defaultResult.data(using: .utf8) else {
+                            throw AIServiceError.invalidResponse
+                        }
+                        
+                        var defaultResultObj = try JSONDecoder().decode(Decision.Result.self, from: defaultData)
+                        defaultResultObj.thinkingProcess = fullReasoning
+                        continuation.resume(returning: defaultResultObj)
+                        return
                     }
                     
-                    print("Final sanitized JSON: \(cleanedString)")
-                    
-                    // 如果仍然无法解析，尝试手动构建一个有效的JSON结构
+                    // 尝试解析清理后的JSON
                     guard let resultData = cleanedString.data(using: .utf8) else {
                         throw AIServiceError.invalidResponse
-                    }
-                    
-                    // 尝试验证JSON是否有效
-                    do {
-                        let _ = try JSONSerialization.jsonObject(with: resultData, options: [])
-                        print("JSON is now valid after sanitization")
-                    } catch {
-                        print("JSON is still invalid after sanitization: \(error.localizedDescription)")
-                        // 如果仍然无效，尝试手动解析关键字段
-                        throw AIServiceError.parseError
                     }
                     
                     do {

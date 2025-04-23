@@ -708,46 +708,57 @@ struct CreateDecisionView: View {
                         .padding(.top, 10)
                         
                         // 思考过程显示区域
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 4) {
-                                if aiService.streamedThinkingSteps.isEmpty {
-                                    // 显示初始提示消息
-                                    Text("正在启动思考分析过程...")
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.vertical, 8)
-                                } else {
-                                    // 将所有思考步骤合并为一个文本显示，保持思考过程的连续性
-                                    Text(aiService.streamedThinkingSteps.joined())
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.primary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.vertical, 2)
-                                        .transition(.opacity)
-                                        .id(aiService.streamedThinkingSteps.count) // 确保每次更新时视图都会刷新
-                                }
-                                
-                                if !aiService.streamingComplete {
-                                    // 打字指示器
-                                    HStack(spacing: 4) {
-                                        ForEach(0..<3) { i in
-                                            Circle()
-                                                .fill(Color("AppPrimary").opacity(0.6))
-                                                .frame(width: 6, height: 6)
-                                                .scaleEffect(isAnalyzing ? 1.1 : 0.8)
-                                                .animation(
-                                                    Animation.easeInOut(duration: 0.5)
-                                                        .repeatForever()
-                                                        .delay(Double(i) * 0.2),
-                                                    value: isAnalyzing
-                                                )
-                                        }
+                        ScrollViewReader { scrollProxy in
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    if aiService.streamedThinkingSteps.isEmpty {
+                                        // 显示初始提示消息
+                                        Text("正在启动思考分析过程...")
+                                            .font(.system(size: 15))
+                                            .foregroundColor(.secondary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.vertical, 8)
+                                    } else {
+                                        // 将所有思考步骤合并为一个文本显示，保持思考过程的连续性
+                                        Text(aiService.streamedThinkingSteps.joined())
+                                            .font(.system(size: 15))
+                                            .foregroundColor(.primary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.vertical, 2)
+                                            .transition(.opacity)
+                                            .id("scrollToBottom") // 用于自动滚动的ID
                                     }
-                                    .padding(.vertical, 8)
+                                    
+                                    if !aiService.streamingComplete {
+                                        // 打字指示器
+                                        HStack(spacing: 4) {
+                                            ForEach(0..<3) { i in
+                                                Circle()
+                                                    .fill(Color("AppPrimary").opacity(0.6))
+                                                    .frame(width: 6, height: 6)
+                                                    .scaleEffect(isAnalyzing ? 1.1 : 0.8)
+                                                    .animation(
+                                                        Animation.easeInOut(duration: 0.5)
+                                                            .repeatForever()
+                                                            .delay(Double(i) * 0.2),
+                                                        value: isAnalyzing
+                                                    )
+                                            }
+                                        }
+                                        .padding(.vertical, 8)
+                                        .id("typingIndicator") // 打字指示器的ID
+                                    }
+                                }
+                                .padding()
+                            }
+                            .onChange(of: aiService.streamedThinkingSteps.count) { _ in
+                                // 当思考步骤更新时，自动滚动到底部
+                                withAnimation {
+                                    if !aiService.streamedThinkingSteps.isEmpty {
+                                        scrollProxy.scrollTo("scrollToBottom", anchor: .bottom)
+                                    }
                                 }
                             }
-                            .padding()
                         }
                         .frame(maxWidth: .infinity)
                         .background(Color(UIColor.secondarySystemBackground))
@@ -761,10 +772,10 @@ struct CreateDecisionView: View {
                                     // 添加旋转动画的进度指示器
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle())
-                                        .scaleEffect(0.8)
+                                        .scaleEffect(1.2)
                                     
                                     Text("正在总结分析结果...")
-                                        .font(.system(size: 15, weight: .medium))
+                                        .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(.secondary)
                                 }
                                 .padding(.vertical, 12)
@@ -772,11 +783,30 @@ struct CreateDecisionView: View {
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(Color(UIColor.tertiarySystemBackground))
-                                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                                 )
+                                
+                                // 添加进度条来显示处理状态
+                                ProgressView(value: 0.8)
+                                    .progressViewStyle(LinearProgressViewStyle())
+                                    .padding(.horizontal, 16)
+                                    .padding(.top, 4)
+                                
+                                Text("正在处理最终结果，请稍等...")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 4)
+                                
                                 .scaleEffect(1.05) // 稍微放大以吸引注意
                                 .transition(.scale.combined(with: .opacity)) // 添加过渡动画
                             }
+                            .padding(.vertical, 15)
+                            .padding(.horizontal, 20)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color(UIColor.systemBackground))
+                                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+                            )
                             .padding(.top, 15)
                             .animation(.easeInOut(duration: 0.5), value: aiService.isSummarizing) // 添加动画
                         }
