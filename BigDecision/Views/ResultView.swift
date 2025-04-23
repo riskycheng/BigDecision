@@ -201,8 +201,12 @@ struct ResultView: View {
     @State private var isFavorited: Bool
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
+    // 对话框状态
     @State private var showingDetailDialog = false
-    @State private var showingThinkingProcess = false
+    // 分析过程对话框
+    @State private var showingThinkingProcessDialog = false
+    // 分析理由对话框
+    @State private var showingReasoningDialog = false
     @State private var showingReanalyzeConfirmation = false
     @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     @State private var selectedShareContentType: ShareContentType = .summary
@@ -279,8 +283,8 @@ struct ResultView: View {
                             }
                             
                             Button(action: { 
-                                showingThinkingProcess = false
-                                showingDetailDialog = true 
+                                // 显示分析理由对话框
+                                showingReasoningDialog = true
                             }) {
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(result.reasoning)
@@ -359,8 +363,8 @@ struct ResultView: View {
                                     Spacer()
                                     
                                     Button(action: {
-                                        showingThinkingProcess = true
-                                        showingDetailDialog = true
+                                        // 直接显示分析过程对话框
+                                        showingThinkingProcessDialog = true
                                     }) {
                                         Text("查看全部")
                                             .font(.system(size: 14))
@@ -380,8 +384,8 @@ struct ResultView: View {
                             }
                         }
                         .onTapGesture {
-                            showingThinkingProcess = true
-                            showingDetailDialog = true
+                            // 直接显示分析过程对话框
+                            showingThinkingProcessDialog = true
                         }
 
                     }
@@ -515,16 +519,17 @@ struct ResultView: View {
         }
         #endif
 
-        .sheet(isPresented: $showingDetailDialog, onDismiss: {
-            // Reset the thinking process flag when the sheet is dismissed
-            showingThinkingProcess = false
-        }) {
+        // 分析理由对话框
+        .sheet(isPresented: $showingReasoningDialog) {
             if let result = decision.result {
-                if showingThinkingProcess, let thinkingProcess = result.thinkingProcess {
-                    DetailDialog(title: "分析过程", content: thinkingProcess)
-                } else {
-                    DetailDialog(title: "分析理由", content: result.reasoning)
-                }
+                DetailDialog(title: "分析理由", content: result.reasoning)
+            }
+        }
+        
+        // 分析过程对话框
+        .sheet(isPresented: $showingThinkingProcessDialog) {
+            if let result = decision.result, let thinkingProcess = result.thinkingProcess {
+                DetailDialog(title: "分析过程", content: thinkingProcess)
             }
         }
     }

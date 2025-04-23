@@ -7,6 +7,7 @@ struct CreateDecisionView: View {
     @EnvironmentObject var decisionStore: DecisionStore
     @Environment(\.dismiss) private var dismiss
     @StateObject private var aiService = AIService()
+    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     
     // 步骤状态
     enum Step: Int, CaseIterable {
@@ -757,6 +758,7 @@ struct CreateDecisionView: View {
                         if aiService.isSummarizing {
                             VStack(spacing: 10) {
                                 HStack(spacing: 8) {
+                                    // 添加旋转动画的进度指示器
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle())
                                         .scaleEffect(0.8)
@@ -765,12 +767,18 @@ struct CreateDecisionView: View {
                                         .font(.system(size: 15, weight: .medium))
                                         .foregroundColor(.secondary)
                                 }
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 12)
-                                .background(Color(UIColor.tertiarySystemBackground))
-                                .cornerRadius(10)
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.tertiarySystemBackground))
+                                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                                )
+                                .scaleEffect(1.05) // 稍微放大以吸引注意
+                                .transition(.scale.combined(with: .opacity)) // 添加过渡动画
                             }
-                            .padding(.top, 10)
+                            .padding(.top, 15)
+                            .animation(.easeInOut(duration: 0.5), value: aiService.isSummarizing) // 添加动画
                         }
                         
                         // 最终答案显示
@@ -1130,14 +1138,54 @@ struct CreateDecisionView: View {
                 var finalDecision = newDecision
                 finalDecision.result = result
                 
-                // 保存决策到存储
-                decisionStore.addDecision(finalDecision)
+                // 检查是否是重新分析模式
+                if reanalysisCoordinator.isReanalyzing, let originalId = reanalysisCoordinator.originalDecisionId {
+                    // 如果是重新分析，更新原始决策而不是创建新的
+                    print("Updating existing decision with ID: \(originalId)")
+                    finalDecision.id = originalId // 确保ID匹配
+                    decisionStore.updateDecision(finalDecision)
+                } else {
+                    // 如果是新决策，添加到存储
+                    print("Adding new decision")
+                    decisionStore.addDecision(finalDecision)
+                }
                 
                 // 更新当前决策
                 DispatchQueue.main.async {
                     self.decision = finalDecision
-                    withAnimation {
-                        self.currentStep = .result
+                    
+                    // 短暂延迟后跳转到结果页面，确保总结动画有足够时间显示
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            // 先将当前视图设置为结果视图
+                            self.currentStep = .result
+                            
+                            // 如果是重新分析，处理导航逻辑
+                            if reanalysisCoordinator.isReanalyzing {
+                                // 先结束重新分析状态
+                                reanalysisCoordinator.endReanalysis()
+                                
+                                // 关闭当前视图，返回到上一个视图
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.dismiss()
+                                    
+                                    // 在关闭当前视图后，打开新的ResultView显示重新分析结果
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        // 使用通知中心发送通知，通知应用打开结果视图
+                                        NotificationCenter.default.post(
+                                            name: Notification.Name("OpenResultView"),
+                                            object: nil,
+                                            userInfo: ["decisionId": finalDecision.id]
+                                        )
+                                    }
+                                }
+                            } else {
+                                // 如果是新决策，则直接关闭当前视图
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.dismiss()
+                                }
+                            }
+                        }
                     }
                 }
             } catch {

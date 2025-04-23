@@ -15,6 +15,9 @@ struct HomeView: View {
     @State private var showingHistoryView = false
     @State private var showingGuideView = false
     
+    // 用于处理重新分析后打开ResultView的通知观察者
+    @State private var notificationObserver: NSObjectProtocol?
+    
     var body: some View {
         ZStack(alignment: .top) {
             // 背景色
@@ -174,6 +177,12 @@ struct HomeView: View {
                 }
             }
         }
+        .onAppear {
+            setupNotificationObserver()
+        }
+        .onDisappear {
+            removeNotificationObserver()
+        }
         .sheet(item: $selectedDecision) { decision in
             ResultView(decision: decision)
         }
@@ -200,6 +209,43 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showingGuideView) {
             GuideView()
+        }
+    }
+    
+    // 设置通知观察者来处理重新分析后打开ResultView
+    private func setupNotificationObserver() {
+        // 移除现有观察者，避免重复注册
+        removeNotificationObserver()
+        
+        // 创建新的观察者
+        notificationObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name("OpenResultView"),
+            object: nil,
+            queue: .main
+        ) { notification in
+            // 不需要使用weak self，因为HomeView是一个Struct
+            
+            // 从通知中获取决策ID
+            if let userInfo = notification.userInfo,
+               let decisionId = userInfo["decisionId"] as? UUID {
+                
+                // 根据ID查找决策
+                if let decision = self.decisionStore.decisions.first(where: { $0.id == decisionId }) {
+                    // 设置选中的决策并显示ResultView
+                    self.selectedDecision = decision
+                    self.showingResultView = true
+                    
+                    print("Opening ResultView for reanalyzed decision: \(decisionId)")
+                }
+            }
+        }
+    }
+    
+    // 移除通知观察者
+    private func removeNotificationObserver() {
+        if let observer = notificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+            notificationObserver = nil
         }
     }
     

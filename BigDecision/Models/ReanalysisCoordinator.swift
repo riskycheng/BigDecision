@@ -7,6 +7,7 @@ class ReanalysisCoordinator: ObservableObject {
     
     @Published var isShowingReanalysis = false
     @Published var decisionToReanalyze: Decision? = nil
+    @Published var originalDecisionId: UUID? = nil // 存储原始决策的ID，用于更新
     private var isProcessing = false
     
     private init() {}
@@ -20,6 +21,9 @@ class ReanalysisCoordinator: ObservableObject {
             return 
         }
         isProcessing = true
+        
+        // 保存原始决策ID，用于后续更新
+        self.originalDecisionId = decision.id
         
         // 创建一个新的决策对象，保留原始决策的所有信息（包括 ID），但清除结果
         let reanalysisDecision = Decision(
@@ -69,8 +73,14 @@ class ReanalysisCoordinator: ObservableObject {
         // 短暂延迟后清除决策数据，确保视图已完全关闭
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self else { return }
-            print("Clearing decisionToReanalyze")
+            print("Clearing decisionToReanalyze and originalDecisionId")
             self.decisionToReanalyze = nil
+            self.originalDecisionId = nil
         }
+    }
+    
+    // 检查当前是否是重新分析模式
+    var isReanalyzing: Bool {
+        return originalDecisionId != nil
     }
 }

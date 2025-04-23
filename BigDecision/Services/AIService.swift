@@ -421,20 +421,77 @@ class AIService: ObservableObject {
                     
                     // 流式传输完成后，进入总结阶段
                     DispatchQueue.main.async {
-                        self.isSummarizing = true
-                        self.finalAnswer = "AI正在总结分析结果..."
+                        // 使用动画过渡到总结状态
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            self.isSummarizing = true
+                            self.finalAnswer = "AI正在总结分析结果..."
+                        }
+                        
+                        // 发送通知以触发可能的视觉反馈
+                        self.objectWillChange.send()
                     }
                     
-                    // 等待短暂时间，显示总结状态
-                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1秒
+                    // 等待短暂时间，显示总结状态，增加时间以提供更好的视觉反馈
+                    try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5秒
                     
-                    let cleanedString = fullContent
+                    // 清理JSON字符串，处理常见格式问题
+                    var cleanedString = fullContent
                         .replacingOccurrences(of: "```json", with: "")
                         .replacingOccurrences(of: "```", with: "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                     
+                    // 尝试使用更强大的方法解析JSON
+                    do {
+                        // 首先尝试直接解析，看是否是有效的JSON
+                        let _ = try JSONSerialization.jsonObject(with: cleanedString.data(using: .utf8) ?? Data(), options: [])
+                        // 如果能成功解析，就使用原始字符串
+                        print("JSON is already valid, no sanitization needed")
+                    } catch {
+                        print("Invalid JSON, attempting to sanitize: \(error.localizedDescription)")
+                        
+                        // 替换单引号为双引号
+                        cleanedString = cleanedString.replacingOccurrences(of: "'", with: "\"")
+                        
+                        // 处理字符串内的转义
+                        // 使用正则表达式找到JSON字符串中的值部分并正确转义
+                        let regex = try? NSRegularExpression(pattern: "\"([^\"]*)\"")
+                        if let matches = regex?.matches(in: cleanedString, range: NSRange(cleanedString.startIndex..., in: cleanedString)) {
+                            // 从后向前替换，避免索引变化问题
+                            for match in matches.reversed() {
+                                if let range = Range(match.range(at: 1), in: cleanedString) {
+                                    let value = String(cleanedString[range])
+                                    // 转义特殊字符
+                                    let escapedValue = value
+                                        .replacingOccurrences(of: "\\", with: "\\\\")
+                                        .replacingOccurrences(of: "\n", with: "\\n")
+                                        .replacingOccurrences(of: "\r", with: "\\r")
+                                        .replacingOccurrences(of: "\t", with: "\\t")
+                                        .replacingOccurrences(of: "\"", with: "\\\"")
+                                    
+                                    if value != escapedValue {
+                                        let fullRange = Range(match.range, in: cleanedString)!
+                                        cleanedString = cleanedString.replacingCharacters(in: fullRange, with: "\"\(escapedValue)\"")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    print("Final sanitized JSON: \(cleanedString)")
+                    
+                    // 如果仍然无法解析，尝试手动构建一个有效的JSON结构
                     guard let resultData = cleanedString.data(using: .utf8) else {
                         throw AIServiceError.invalidResponse
+                    }
+                    
+                    // 尝试验证JSON是否有效
+                    do {
+                        let _ = try JSONSerialization.jsonObject(with: resultData, options: [])
+                        print("JSON is now valid after sanitization")
+                    } catch {
+                        print("JSON is still invalid after sanitization: \(error.localizedDescription)")
+                        // 如果仍然无效，尝试手动解析关键字段
+                        throw AIServiceError.parseError
                     }
                     
                     do {
