@@ -642,9 +642,8 @@ struct CreateDecisionView: View {
                 .ignoresSafeArea()
             #endif
             
-            VStack(spacing: 25) {
-                Spacer()
-                
+            // 将整个内容放入ScrollView使整个页面可滚动
+            ScrollView {
                 if showingError {
                     // 错误状态视图
                     VStack(spacing: 20) {
@@ -691,11 +690,12 @@ struct CreateDecisionView: View {
                             }
                         }
                     }
+                    .padding(.top, 60)
                 } else if let modelType = AIModelType(rawValue: aiService.aiModelType), 
                           modelType == .advanced {
                     // 高级模式 - 思考过程流式显示
-                    VStack(spacing: 20) {
-                        // 顶部标题
+                    VStack(spacing: 16) {
+                        // 顶部标题 - 减少顶部边距
                         HStack {
                             Image(systemName: "brain.head.profile")
                                 .font(.system(size: 20))
@@ -705,52 +705,52 @@ struct CreateDecisionView: View {
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(Color("AppPrimary"))
                         }
-                        .padding(.top, 10)
+                        // 减少顶部边距，使内容更靠上
+                        .padding(.top, 4)
                         
                         // 思考过程显示区域
                         ScrollViewReader { scrollProxy in
-                            ScrollView {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    if aiService.streamedThinkingSteps.isEmpty {
-                                        // 显示初始提示消息
-                                        Text("正在启动思考分析过程...")
-                                            .font(.system(size: 15))
-                                            .foregroundColor(.secondary)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(.vertical, 8)
-                                    } else {
-                                        // 将所有思考步骤合并为一个文本显示，保持思考过程的连续性
-                                        Text(aiService.streamedThinkingSteps.joined())
-                                            .font(.system(size: 15))
-                                            .foregroundColor(.primary)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(.vertical, 2)
-                                            .transition(.opacity)
-                                            .id("scrollToBottom") // 用于自动滚动的ID
-                                    }
-                                    
-                                    if !aiService.streamingComplete {
-                                        // 打字指示器
-                                        HStack(spacing: 4) {
-                                            ForEach(0..<3) { i in
-                                                Circle()
-                                                    .fill(Color("AppPrimary").opacity(0.6))
-                                                    .frame(width: 6, height: 6)
-                                                    .scaleEffect(isAnalyzing ? 1.1 : 0.8)
-                                                    .animation(
-                                                        Animation.easeInOut(duration: 0.5)
-                                                            .repeatForever()
-                                                            .delay(Double(i) * 0.2),
-                                                        value: isAnalyzing
-                                                    )
-                                            }
-                                        }
+                            // 这里不需要嵌套ScrollView，因为外层已经有了
+                            VStack(alignment: .leading, spacing: 4) {
+                                if aiService.streamedThinkingSteps.isEmpty {
+                                    // 显示初始提示消息
+                                    Text("正在启动思考分析过程...")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.vertical, 8)
-                                        .id("typingIndicator") // 打字指示器的ID
-                                    }
+                                } else {
+                                    // 将所有思考步骤合并为一个文本显示，保持思考过程的连续性
+                                    Text(aiService.streamedThinkingSteps.joined())
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.primary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 2)
+                                        .transition(.opacity)
+                                        .id("scrollToBottom") // 用于自动滚动的ID
                                 }
-                                .padding()
+                                
+                                if !aiService.streamingComplete {
+                                    // 打字指示器
+                                    HStack(spacing: 4) {
+                                        ForEach(0..<3) { i in
+                                            Circle()
+                                                .fill(Color("AppPrimary").opacity(0.6))
+                                                .frame(width: 6, height: 6)
+                                                .scaleEffect(isAnalyzing ? 1.1 : 0.8)
+                                                .animation(
+                                                    Animation.easeInOut(duration: 0.5)
+                                                        .repeatForever()
+                                                        .delay(Double(i) * 0.2),
+                                                    value: isAnalyzing
+                                                )
+                                        }
+                                    }
+                                    .padding(.vertical, 8)
+                                    .id("typingIndicator") // 打字指示器的ID
+                                }
                             }
+                            .padding()
                             .onChange(of: aiService.streamedThinkingSteps.count) { _ in
                                 // 当思考步骤更新时，自动滚动到底部
                                 withAnimation {
@@ -763,7 +763,8 @@ struct CreateDecisionView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color(UIColor.secondarySystemBackground))
                         .cornerRadius(12)
-                        .padding(.horizontal)
+                        // 减少水平边距，使文本区域更宽
+                        .padding(.horizontal, 10)
                         
                         // 总结阶段指示器
                         if aiService.isSummarizing {
@@ -800,14 +801,14 @@ struct CreateDecisionView: View {
                                 .scaleEffect(1.05) // 稍微放大以吸引注意
                                 .transition(.scale.combined(with: .opacity)) // 添加过渡动画
                             }
-                            .padding(.vertical, 15)
-                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16) // 减少水平边距
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(Color(UIColor.systemBackground))
                                     .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
                             )
-                            .padding(.top, 15)
+                            .padding(.top, 10) // 减少顶部边距
                             .animation(.easeInOut(duration: 0.5), value: aiService.isSummarizing) // 添加动画
                         }
                         
@@ -853,8 +854,8 @@ struct CreateDecisionView: View {
                     .padding()
                 } else {
                     // 标准分析中状态视图
-                    VStack(spacing: 25) {
-                        // 分析动画
+                    VStack(spacing: 20) {
+                        // 分析动画 - 减少顶部边距
                         ZStack {
                             // 波浪动画背景
                             ForEach(0..<3) { index in
@@ -952,11 +953,12 @@ struct CreateDecisionView: View {
                             .padding(.horizontal, 20)
                         }
                     }
+                    // 添加底部间距，确保内容不会贴在底部
+                    .padding(.bottom, 20)
                 }
-                
-                Spacer()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // 设置最小高度，确保内容足够填充屏幕
+            .frame(maxWidth: .infinity, minHeight: UIScreen.main.bounds.height * 0.7)
         }
         .onAppear {
             DispatchQueue.main.async {

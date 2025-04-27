@@ -442,7 +442,7 @@ class AIService: ObservableObject {
                     
                     print("Original JSON string: \(cleanedString)")
                     
-                    // 尝试使用更强大的方法解析JSON
+                    // 使用更健壮的方法解析JSON
                     do {
                         // 首先尝试直接解析，看是否是有效的JSON
                         let _ = try JSONSerialization.jsonObject(with: cleanedString.data(using: .utf8) ?? Data(), options: [])
@@ -451,132 +451,110 @@ class AIService: ObservableObject {
                     } catch {
                         print("Invalid JSON, attempting to sanitize: \(error.localizedDescription)")
                         
-                        // 替换单引号为双引号
-                        cleanedString = cleanedString.replacingOccurrences(of: "'", with: "\"")
+                        // 第一步：标准化引号 - 将所有单引号替换为双引号
+                        var sanitizedString = cleanedString.replacingOccurrences(of: "'", with: "\"")
                         
-                        // 尝试使用正则表达式提取各个字段
-                        let recommendationRegex = try? NSRegularExpression(pattern: "\"recommendation\":\\s*\"([A-Z])\"")
-                        let confidenceRegex = try? NSRegularExpression(pattern: "\"confidence\":\\s*([0-9]\\.[0-9]+)")
-                        // 使用更强大的方法提取reasoning字段，能够处理包含括号和引号的复杂中文文本
-                        let reasoningStartPattern = "\"reasoning\":\\s*\""
-                        let reasoningRegex = try? NSRegularExpression(pattern: reasoningStartPattern)
-                        // 使用更精确的模式来提取数组字段
-                        let prosAStartPattern = "\"prosA\":\\s*\\["
-                        let consAStartPattern = "\"consA\":\\s*\\["
-                        let prosBStartPattern = "\"prosB\":\\s*\\["
-                        let consBStartPattern = "\"consB\":\\s*\\["
-                        
-                        let prosARegex = try? NSRegularExpression(pattern: prosAStartPattern)
-                        let consARegex = try? NSRegularExpression(pattern: consAStartPattern)
-                        let prosBRegex = try? NSRegularExpression(pattern: prosBStartPattern)
-                        let consBRegex = try? NSRegularExpression(pattern: consBStartPattern)
-                        
-                        // 提取字段值的函数
-                        func extractValue(regex: NSRegularExpression?, from string: String, defaultValue: String = "") -> String {
-                            guard let match = regex?.firstMatch(in: string, range: NSRange(string.startIndex..., in: string)),
-                                  let range = Range(match.range(at: 1), in: string) else {
-                                return defaultValue
-                            }
-                            return String(string[range])
-                        }
-                        
-                        // 提取各个字段的值
-                        let recommendation = extractValue(regex: recommendationRegex, from: cleanedString, defaultValue: "A")
-                        let confidence = extractValue(regex: confidenceRegex, from: cleanedString, defaultValue: "0.5")
-                        // 使用更复杂的逻辑提取reasoning字段
-                        var reasoning = "无法解析分析理由"
-                        if let regex = reasoningRegex,
-                           let match = regex.firstMatch(in: cleanedString, range: NSRange(cleanedString.startIndex..., in: cleanedString)),
-                           let startRange = Range(match.range, in: cleanedString) {
-                            let startIndex = cleanedString.index(startRange.upperBound, offsetBy: 0)
-                            var endIndex = startIndex
-                            var depth = 0
-                            var isEscaped = false
+                        // 第二步：修复嵌套引号问题 - 先标记所有JSON键的双引号
+                        let jsonKeyPattern = "\"(recommendation|confidence|reasoning|prosA|consA|prosB|consB)\"\\s*:"
+                        if let regex = try? NSRegularExpression(pattern: jsonKeyPattern) {
+                            let range = NSRange(sanitizedString.startIndex..., in: sanitizedString)
+                            let matches = regex.matches(in: sanitizedString, range: range)
                             
-                            // 从开始位置向后搜索，找到匹配的引号
-                            for index in cleanedString.indices[startIndex...] {
-                                let char = cleanedString[index]
-                                
-                                if char == "\\" && !isEscaped {
-                                    isEscaped = true
-                                    continue
+                            // 从后向前替换，避免位置偏移
+                            for match in matches.reversed() {
+                                if let keyRange = Range(match.range, in: sanitizedString) {
+                                    let key = sanitizedString[keyRange]
+                                    // 用特殊标记替换JSON键中的双引号
+                                    let markedKey = String(key).replacingOccurrences(of: "\"", with: "__QUOTE__")
+                                    sanitizedString.replaceSubrange(keyRange, with: markedKey)
                                 }
-                                
-                                if char == "\"" && !isEscaped {
-                                    if depth == 0 {
-                                        endIndex = index
-                                        break
-                                    }
-                                    depth -= 1
-                                } else if char == "(" || char == "（" {
-                                    depth += 1
-                                } else if char == ")" || char == "）" {
-                                    if depth > 0 {
-                                        depth -= 1
-                                    }
-                                }
-                                
-                                isEscaped = false
-                            }
-                            
-                            if endIndex > startIndex {
-                                reasoning = String(cleanedString[startIndex..<endIndex])
                             }
                         }
                         
-                        // 提取数组的通用函数
-                        func extractArray(regex: NSRegularExpression?, from string: String, defaultValue: String = "\"无法解析列表\"") -> String {
-                            guard let match = regex?.firstMatch(in: string, range: NSRange(string.startIndex..., in: string)),
-                                  let startRange = Range(match.range, in: string) else {
-                                return defaultValue
-                            }
+                        // 第三步：处理数组中的嵌套引号
+                        // 找到所有数组
+                        let arrayPattern = "\\[([^\\[\\]]*)\\]"
+                        if let regex = try? NSRegularExpression(pattern: arrayPattern) {
+                            let range = NSRange(sanitizedString.startIndex..., in: sanitizedString)
+                            let matches = regex.matches(in: sanitizedString, range: range)
                             
-                            let startIndex = string.index(startRange.upperBound, offsetBy: 0)
-                            var endIndex = startIndex
-                            var bracketCount = 1  // 已经开始了一个左括号
-                            
-                            // 从数组开始位置向后搜索匹配的右括号
-                            for index in string.indices[startIndex...] {
-                                let char = string[index]
-                                
-                                if char == "[" {
-                                    bracketCount += 1
-                                } else if char == "]" {
-                                    bracketCount -= 1
-                                    if bracketCount == 0 {
-                                        endIndex = index
-                                        break
+                            for match in matches.reversed() {
+                                if let arrayRange = Range(match.range(at: 1), in: sanitizedString),
+                                   let fullRange = Range(match.range, in: sanitizedString) {
+                                    let arrayContent = sanitizedString[arrayRange]
+                                    // 处理数组内容中的引号
+                                    var processedContent = String(arrayContent)
+                                    
+                                    // 将数组元素中的双引号替换为转义的双引号
+                                    let itemPattern = "\"([^\\\"]*)\""  // 匹配双引号内的内容
+                                    if let itemRegex = try? NSRegularExpression(pattern: itemPattern) {
+                                        let itemRange = NSRange(processedContent.startIndex..., in: processedContent)
+                                        let itemMatches = itemRegex.matches(in: processedContent, range: itemRange)
+                                        
+                                        for itemMatch in itemMatches.reversed() {
+                                            if let textRange = Range(itemMatch.range(at: 1), in: processedContent),
+                                               let fullItemRange = Range(itemMatch.range, in: processedContent) {
+                                                let text = processedContent[textRange]
+                                                // 处理文本中的内部引号
+                                                let escapedText = String(text).replacingOccurrences(of: "\"", with: "\\\"")
+                                                // 重建带转义引号的元素
+                                                processedContent.replaceSubrange(fullItemRange, with: "\"\(escapedText)\"")
+                                            }
+                                        }
                                     }
+                                    
+                                    // 更新原始字符串中的数组
+                                    sanitizedString.replaceSubrange(fullRange, with: "[\(processedContent)]")
                                 }
                             }
-                            
-                            if endIndex > startIndex {
-                                return String(string[startIndex..<endIndex])
-                            }
-                            
-                            return defaultValue
                         }
                         
-                        // 提取各个数组字段
-                        let prosA = extractArray(regex: prosARegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
-                        let consA = extractArray(regex: consARegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
-                        let prosB = extractArray(regex: prosBRegex, from: cleanedString, defaultValue: "\"无法解析优点\"")
-                        let consB = extractArray(regex: consBRegex, from: cleanedString, defaultValue: "\"无法解析缺点\"")
+                        // 第四步：处理reasoning字段中的嵌套引号和特殊字符
+                        let reasoningPattern = "\"reasoning\"\\s*:\\s*\"([^\\\"]*)\""
+                        if let regex = try? NSRegularExpression(pattern: reasoningPattern) {
+                            let range = NSRange(sanitizedString.startIndex..., in: sanitizedString)
+                            if let match = regex.firstMatch(in: sanitizedString, range: range),
+                               let textRange = Range(match.range(at: 1), in: sanitizedString),
+                               let fullRange = Range(match.range, in: sanitizedString) {
+                                let text = sanitizedString[textRange]
+                                // 转义reasoning中的所有双引号
+                                let escapedText = String(text).replacingOccurrences(of: "\"", with: "\\\"")
+                                // 重建reasoning字段
+                                sanitizedString.replaceSubrange(fullRange, with: "\"reasoning\":\"\(escapedText)\"")
+                            }
+                        }
                         
-                        // 处理特殊字符
-                        reasoning = reasoning.replacingOccurrences(of: "\"", with: "\\\"")
+                        // 第五步：恢复JSON键中的双引号标记
+                        sanitizedString = sanitizedString.replacingOccurrences(of: "__QUOTE__", with: "\"")
                         
-                        // 手动构建一个有效的JSON字符串
-                        cleanedString = "{"
-                        cleanedString += "\"recommendation\": \"\(recommendation)\","
-                        cleanedString += "\"confidence\": \(confidence),"
-                        cleanedString += "\"reasoning\": \"\(reasoning)\","
-                        cleanedString += "\"prosA\": [\(prosA)],"
-                        cleanedString += "\"consA\": [\(consA)],"
-                        cleanedString += "\"prosB\": [\(prosB)],"
-                        cleanedString += "\"consB\": [\(consB)]"
-                        cleanedString += "}"
+                        // 第六步：确保所有数组元素都用双引号包围
+                        let arrayElementPattern = "\\[([^\\[\\]]*)\\]"
+                        if let regex = try? NSRegularExpression(pattern: arrayElementPattern) {
+                            let range = NSRange(sanitizedString.startIndex..., in: sanitizedString)
+                            let matches = regex.matches(in: sanitizedString, range: range)
+                            
+                            for match in matches.reversed() {
+                                if let arrayRange = Range(match.range(at: 1), in: sanitizedString),
+                                   let fullRange = Range(match.range, in: sanitizedString) {
+                                    let arrayContent = sanitizedString[arrayRange]
+                                    // 分割数组元素
+                                    let elements = String(arrayContent).components(separatedBy: ",")
+                                    let processedElements = elements.map { element -> String in
+                                        let trimmed = element.trimmingCharacters(in: .whitespacesAndNewlines)
+                                        // 如果元素没有用双引号包围，则添加双引号
+                                        if !trimmed.hasPrefix("\"") || !trimmed.hasSuffix("\"") {
+                                            return "\"\(trimmed.replacingOccurrences(of: "\"", with: ""))\"" 
+                                        }
+                                        return trimmed
+                                    }
+                                    // 重建数组
+                                    sanitizedString.replaceSubrange(fullRange, with: "[\(processedElements.joined(separator: ","))]")
+                                }
+                            }
+                        }
                         
+                        // 保存处理后的JSON字符串
+                        cleanedString = sanitizedString
                         print("Reconstructed JSON: \(cleanedString)")
                         
                         // 如果仍然无法解析，使用默认结果
