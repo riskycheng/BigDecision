@@ -197,11 +197,18 @@ struct CardView<Content: View>: View {
 
 struct ResultView: View {
     let decision: Decision
+    @Environment(\.dismiss) private var dismiss
     @State private var isFavorited: Bool
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
+    // 对话框状态
     @State private var showingDetailDialog = false
+    // 分析过程对话框
+    @State private var showingThinkingProcessDialog = false
+    // 分析理由对话框
+    @State private var showingReasoningDialog = false
     @State private var showingReanalyzeConfirmation = false
+    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     @State private var selectedShareContentType: ShareContentType = .summary
     @State private var showingCreateDecision = false
     #if canImport(UIKit)
@@ -275,7 +282,10 @@ struct ResultView: View {
                                     .foregroundColor(Color("AppPrimary"))
                             }
                             
-                            Button(action: { showingDetailDialog = true }) {
+                            Button(action: { 
+                                // 显示分析理由对话框
+                                showingReasoningDialog = true
+                            }) {
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(result.reasoning)
                                         .font(.system(size: 17))
@@ -336,6 +346,48 @@ struct ResultView: View {
                                 }
                             }
                         }
+                    }
+                    
+                    // 分析过程卡片 - 显示AI思考链
+                    if let thinkingProcess = result.thinkingProcess, !thinkingProcess.isEmpty {
+                        CardView(backgroundColor: Color(UIColor.systemBackground)) {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "brain.head.profile")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(Color("AppPrimary"))
+                                    Text("分析过程")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color("AppPrimary"))
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        // 直接显示分析过程对话框
+                                        showingThinkingProcessDialog = true
+                                    }) {
+                                        Text("查看全部")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(Color("AppPrimary").opacity(0.8))
+                                    }
+                                }
+                                
+                                // 思考过程预览
+                                Text(thinkingProcess.prefix(300) + (thinkingProcess.count > 300 ? "..." : ""))
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(8)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(12)
+                                    .background(Color(UIColor.secondarySystemBackground))
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .onTapGesture {
+                            // 直接显示分析过程对话框
+                            showingThinkingProcessDialog = true
+                        }
+
                     }
                     
                     // 底部操作按钮栏
@@ -449,7 +501,13 @@ struct ResultView: View {
                 title: Text("确认重新分析"),
                 message: Text("是否要使用当前的选项重新进行分析？您可以在分析前修改相关信息。"),
                 primaryButton: .default(Text("确定")) {
-                    showingCreateDecision = true
+                    // 先启动重新分析过程
+                    reanalysisCoordinator.startReanalysis(with: decision)
+                    
+                    // 等待短暂时间再关闭当前视图，确保协调器有足够时间准备
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        dismiss()
+                    }
                 },
                 secondaryButton: .cancel(Text("取消"))
             )
@@ -460,23 +518,18 @@ struct ResultView: View {
             }
         }
         #endif
-        .fullScreenCover(isPresented: $showingCreateDecision) {
-            CreateDecisionView(
-                initialDecision: Decision(
-                    title: decision.title,
-                    options: decision.options,
-                    additionalInfo: decision.additionalInfo,
-                    decisionType: decision.decisionType,
-                    importance: decision.importance,
-                    timeFrame: decision.timeFrame,
-                    result: nil,
-                    createdAt: Date()
-                )
-            )
-        }
-        .sheet(isPresented: $showingDetailDialog) {
+
+        // 分析理由对话框
+        .sheet(isPresented: $showingReasoningDialog) {
             if let result = decision.result {
                 DetailDialog(title: "分析理由", content: result.reasoning)
+            }
+        }
+        
+        // 分析过程对话框
+        .sheet(isPresented: $showingThinkingProcessDialog) {
+            if let result = decision.result, let thinkingProcess = result.thinkingProcess {
+                DetailDialog(title: "分析过程", content: thinkingProcess)
             }
         }
     }

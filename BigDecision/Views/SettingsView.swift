@@ -230,7 +230,7 @@ struct SettingsView: View {
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(Color.white)
                                     .shadow(color: Color.black.opacity(0.1), radius: 5)
-                                    .frame(height: 50)
+                                    .frame(height: 44)
                                 
                                 // 波浪动画层
                                 ZStack {
@@ -246,7 +246,7 @@ struct SettingsView: View {
                                 }
                                 .mask(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .frame(height: 50)
+                                        .frame(height: 44)
                                 )
                                 
                                 // 文字层
@@ -273,7 +273,7 @@ struct SettingsView: View {
                                     .foregroundColor(Color("AppPrimary"))
                                 }
                             }
-                            .padding(.top, 12)
+                            .padding(.top, -10)
                         }
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity, alignment: .leading)

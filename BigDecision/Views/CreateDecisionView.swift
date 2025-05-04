@@ -1,10 +1,13 @@
 import SwiftUI
 import UIKit
+import Combine
 
 struct CreateDecisionView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var decisionStore: DecisionStore
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var aiService = AIService()
+    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     
     // 步骤状态
     enum Step: Int, CaseIterable {
@@ -63,6 +66,7 @@ struct CreateDecisionView: View {
     private let maxRetries = 2
     @State private var analysisSteps: [String] = []
     @State private var currentAnalysisStep = 0
+    @State private var showingThinkingProcess = false
     private let analysisStepMessages = [
         "正在理解您的决策问题...",
         "分析选项A的优缺点...",
@@ -75,6 +79,7 @@ struct CreateDecisionView: View {
     @State private var decisionType: Decision.DecisionType = .other
     @State private var importance: Int = 3
     @State private var timeFrame: Decision.TimeFrame = .days
+    @State private var selectedDecisionTypeFilter: Decision.DecisionType = .other
     
     init(initialDecision: Decision? = nil) {
         self.initialDecision = initialDecision
@@ -86,9 +91,13 @@ struct CreateDecisionView: View {
             _decisionType = State(initialValue: initial.decisionType)
             _importance = State(initialValue: initial.importance)
             _timeFrame = State(initialValue: initial.timeFrame)
+            
+            // 如果是重新分析，从选项步骤开始
+            _currentStep = State(initialValue: .options)
+        } else {
+            // 新决策从第一步开始
+            _currentStep = State(initialValue: .title)
         }
-        // 确保从第一步开始
-        _currentStep = State(initialValue: .title)
     }
     
     var body: some View {
@@ -106,10 +115,6 @@ struct CreateDecisionView: View {
                 VStack(spacing: 0) {
                     // 顶部导航栏
                     HStack {
-                        // 占位视图保持对称
-                        Color.clear
-                            .frame(width: 32, height: 32)
-                        
                         Spacer()
                         
                         // 进度指示器
@@ -117,10 +122,6 @@ struct CreateDecisionView: View {
                             .frame(width: 250)
                         
                         Spacer()
-                        
-                        // 占位视图保持对称
-                        Color.clear
-                            .frame(width: 32, height: 32)
                     }
                     .padding(.horizontal)
                     .padding(.top, 16)
@@ -139,7 +140,10 @@ struct CreateDecisionView: View {
                                 analyzingView
                             case .result:
                                 if let decision = decision {
-                                    ResultView(decision: decision)
+                                    VStack {
+                                        
+                                        ResultView(decision: decision)
+                                    }
                                 }
                             }
                         }
@@ -285,7 +289,6 @@ struct CreateDecisionView: View {
             .buttonStyle(ScaleButtonStyle())
         }
         .padding(.top, 20)
-        .animation(.easeInOut(duration: 0.3), value: title)
         .sheet(isPresented: $isEditingTitle) {
             InputSheet(
                 title: "输入您的困惑",
@@ -518,6 +521,27 @@ struct CreateDecisionView: View {
                 .font(.system(size: 17))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                
+            // 决策类型选择标签
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(Decision.DecisionType.allCases, id: \.self) { type in
+                        DecisionTypeFilterButton(
+                            title: type.rawValue,
+                            icon: type.icon,
+                            isSelected: selectedDecisionTypeFilter == type,
+                            action: {
+                                withAnimation {
+                                    selectedDecisionTypeFilter = type
+                                    decisionType = type
+                                }
+                            }
+                        )
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .padding(.vertical, 5)
             
             Button(action: {
                 withAnimation {
@@ -618,9 +642,8 @@ struct CreateDecisionView: View {
                 .ignoresSafeArea()
             #endif
             
-            VStack(spacing: 25) {
-                Spacer()
-                
+            // 将整个内容放入ScrollView使整个页面可滚动
+            ScrollView {
                 if showingError {
                     // 错误状态视图
                     VStack(spacing: 20) {
@@ -667,10 +690,172 @@ struct CreateDecisionView: View {
                             }
                         }
                     }
+                    .padding(.top, 60)
+                } else if let modelType = AIModelType(rawValue: aiService.aiModelType), 
+                          modelType == .advanced {
+                    // 高级模式 - 思考过程流式显示
+                    VStack(spacing: 16) {
+                        // 顶部标题 - 减少顶部边距
+                        HStack {
+                            Image(systemName: "brain.head.profile")
+                                .font(.system(size: 20))
+                                .foregroundColor(Color("AppPrimary"))
+                            
+                            Text("AI思考过程")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(Color("AppPrimary"))
+                        }
+                        // 减少顶部边距，使内容更靠上
+                        .padding(.top, 4)
+                        
+                        // 思考过程显示区域
+                        ScrollViewReader { scrollProxy in
+                            // 这里不需要嵌套ScrollView，因为外层已经有了
+                            VStack(alignment: .leading, spacing: 4) {
+                                if aiService.streamedThinkingSteps.isEmpty {
+                                    // 显示初始提示消息
+                                    Text("正在启动思考分析过程...")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 8)
+                                } else {
+                                    // 将所有思考步骤合并为一个文本显示，保持思考过程的连续性
+                                    Text(aiService.streamedThinkingSteps.joined())
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.primary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 2)
+                                        .transition(.opacity)
+                                        .id("scrollToBottom") // 用于自动滚动的ID
+                                }
+                                
+                                if !aiService.streamingComplete {
+                                    // 打字指示器
+                                    HStack(spacing: 4) {
+                                        ForEach(0..<3) { i in
+                                            Circle()
+                                                .fill(Color("AppPrimary").opacity(0.6))
+                                                .frame(width: 6, height: 6)
+                                                .scaleEffect(isAnalyzing ? 1.1 : 0.8)
+                                                .animation(
+                                                    Animation.easeInOut(duration: 0.5)
+                                                        .repeatForever()
+                                                        .delay(Double(i) * 0.2),
+                                                    value: isAnalyzing
+                                                )
+                                        }
+                                    }
+                                    .padding(.vertical, 8)
+                                    .id("typingIndicator") // 打字指示器的ID
+                                }
+                            }
+                            .padding()
+                            .onChange(of: aiService.streamedThinkingSteps.count) { _ in
+                                // 当思考步骤更新时，自动滚动到底部
+                                withAnimation {
+                                    if !aiService.streamedThinkingSteps.isEmpty {
+                                        scrollProxy.scrollTo("scrollToBottom", anchor: .bottom)
+                                    }
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(12)
+                        // 减少水平边距，使文本区域更宽
+                        .padding(.horizontal, 10)
+                        
+                        // 总结阶段指示器
+                        if aiService.isSummarizing {
+                            VStack(spacing: 10) {
+                                HStack(spacing: 8) {
+                                    // 添加旋转动画的进度指示器
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle())
+                                        .scaleEffect(1.2)
+                                    
+                                    Text("正在总结分析结果...")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color(UIColor.tertiarySystemBackground))
+                                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                                )
+                                
+                                // 添加进度条来显示处理状态
+                                ProgressView(value: 0.8)
+                                    .progressViewStyle(LinearProgressViewStyle())
+                                    .padding(.horizontal, 16)
+                                    .padding(.top, 4)
+                                
+                                Text("正在处理最终结果，请稍等...")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 4)
+                                
+                                .scaleEffect(1.05) // 稍微放大以吸引注意
+                                .transition(.scale.combined(with: .opacity)) // 添加过渡动画
+                            }
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16) // 减少水平边距
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color(UIColor.systemBackground))
+                                    .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+                            )
+                            .padding(.top, 10) // 减少顶部边距
+                            .animation(.easeInOut(duration: 0.5), value: aiService.isSummarizing) // 添加动画
+                        }
+                        
+                        // 最终答案显示
+                        if aiService.streamingComplete && !aiService.finalAnswer.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                    Text("分析完成")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.green)
+                                }
+                                
+                                Divider()
+                                    .padding(.vertical, 4)
+                                
+                                HStack(spacing: 10) {
+                                    Image(systemName: "lightbulb.fill")
+                                        .foregroundColor(Color("AppPrimary"))
+                                        .font(.system(size: 16))
+                                    
+                                    Text("最终建议")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(Color("AppPrimary"))
+                                }
+                                
+                                Text(aiService.finalAnswer)
+                                    .font(.system(size: 17, weight: .medium))
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color("AppPrimary").opacity(0.1))
+                                    .cornerRadius(8)
+                            }
+                            .padding()
+                            .background(Color(UIColor.tertiarySystemBackground))
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        }
+                    }
+                    .padding()
                 } else {
-                    // 分析中状态视图
-                    VStack(spacing: 25) {
-                        // 分析动画
+                    // 标准分析中状态视图
+                    VStack(spacing: 20) {
+                        // 分析动画 - 减少顶部边距
                         ZStack {
                             // 波浪动画背景
                             ForEach(0..<3) { index in
@@ -768,16 +953,25 @@ struct CreateDecisionView: View {
                             .padding(.horizontal, 20)
                         }
                     }
+                    // 添加底部间距，确保内容不会贴在底部
+                    .padding(.bottom, 20)
                 }
-                
-                Spacer()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // 设置最小高度，确保内容足够填充屏幕
+            .frame(maxWidth: .infinity, minHeight: UIScreen.main.bounds.height * 0.7)
         }
         .onAppear {
             DispatchQueue.main.async {
                 withAnimation {
                     isAnalyzing = true
+                    
+                    // 检查是否是高级模式，如果是则启用思考过程显示
+                    if let modelType = AIModelType(rawValue: aiService.aiModelType),
+                       modelType == .advanced {
+                        showingThinkingProcess = true
+                    } else {
+                        showingThinkingProcess = false
+                    }
                 }
             }
         }
@@ -785,6 +979,9 @@ struct CreateDecisionView: View {
             DispatchQueue.main.async {
                 withAnimation {
                     isAnalyzing = false
+                    
+                    // 取消任何正在进行的流式分析
+                    aiService.cancelStreaming()
                 }
             }
         }
@@ -799,14 +996,26 @@ struct CreateDecisionView: View {
         DispatchQueue.main.async {
             withAnimation {
                 isAnalyzing = true
-            }
-        }
-        
-        // 模拟分析进度
-        for step in 0..<analysisStepMessages.count {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(step) * 0.8) {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    currentAnalysisStep = step + 1
+                
+                // 检查是否是高级模式，如果是则启用思考过程显示
+                if let modelType = AIModelType(rawValue: aiService.aiModelType),
+                   modelType == .advanced {
+                    showingThinkingProcess = true
+                    
+                    // 清空之前的思考步骤，准备接收新的流式内容
+                    aiService.streamedThinkingSteps = []
+                } else {
+                    showingThinkingProcess = false
+                    
+                    // 如果不是高级模式，则使用标准分析步骤动画
+                    // 模拟分析进度
+                    for step in 0..<analysisStepMessages.count {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + Double(step) * 0.8) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                currentAnalysisStep = step + 1
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -916,51 +1125,108 @@ struct CreateDecisionView: View {
         if options.count < 2 {
             while options.count < 2 {
                 let option = Option(
-                    title: options.isEmpty ? "是" : "否",
-                    description: ""
+                    title: "选项 \(options.count + 1)",
+                    description: "自动生成的选项描述"
                 )
                 options.append(option)
             }
         }
         
-        currentStep = .analyzing
-        showingError = false
-        
+        // 创建决策对象
         let newDecision = Decision(
             title: title,
             options: options,
             additionalInfo: additionalInfo,
             decisionType: decisionType,
             importance: importance,
-            timeFrame: timeFrame,
-            createdAt: Date()
+            timeFrame: timeFrame
         )
         
-        // 启动分析动画
+        // 立即转到分析视图
+        withAnimation {
+            currentStep = .analyzing
+        }
+        
+        // 在控制台打印决策信息
+        print("\n[开始分析] 决策标题: \(newDecision.title)")
+        print("[选项A] \(newDecision.options[0].title): \(newDecision.options[0].description)")
+        print("[选项B] \(newDecision.options[1].title): \(newDecision.options[1].description)")
+        print("[补充信息] \(newDecision.additionalInfo.isEmpty ? "无" : newDecision.additionalInfo)")
+        print("[模式] \(aiService.aiModelType)\n")
+        
+        // 设置分析步骤
         setupAnalysis()
         
+        // 检查是否是高级模式
+        let isAdvancedMode = AIModelType(rawValue: aiService.aiModelType) == .advanced
+        
+        // 开始分析
         Task {
             do {
-                let aiService = AIService()
-                let analysisResult = try await aiService.analyzeDecision(newDecision)
+                // 调用AI服务进行分析
+                let result = try await aiService.analyzeDecision(newDecision)
                 
-                await MainActor.run {
-                    var updatedDecision = newDecision
-                    updatedDecision.result = analysisResult
-                    self.decision = updatedDecision
-                    self.decisionStore.addDecision(updatedDecision)
-                    withAnimation {
-                        self.currentStep = .result
-                        self.isAnalyzing = false
-                        self.retryCount = 0
+                // 更新决策结果
+                var finalDecision = newDecision
+                finalDecision.result = result
+                
+                // 检查是否是重新分析模式
+                if reanalysisCoordinator.isReanalyzing, let originalId = reanalysisCoordinator.originalDecisionId {
+                    // 如果是重新分析，更新原始决策而不是创建新的
+                    print("Updating existing decision with ID: \(originalId)")
+                    finalDecision.id = originalId // 确保ID匹配
+                    decisionStore.updateDecision(finalDecision)
+                } else {
+                    // 如果是新决策，添加到存储
+                    print("Adding new decision")
+                    decisionStore.addDecision(finalDecision)
+                }
+                
+                // 更新当前决策
+                DispatchQueue.main.async {
+                    self.decision = finalDecision
+                    
+                    // 短暂延迟后跳转到结果页面，确保总结动画有足够时间显示
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            // 先将当前视图设置为结果视图
+                            self.currentStep = .result
+                            
+                            // 如果是重新分析，处理导航逻辑
+                            if reanalysisCoordinator.isReanalyzing {
+                                // 先结束重新分析状态
+                                reanalysisCoordinator.endReanalysis()
+                                
+                                // 关闭当前视图，返回到上一个视图
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.dismiss()
+                                    
+                                    // 在关闭当前视图后，打开新的ResultView显示重新分析结果
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        // 使用通知中心发送通知，通知应用打开结果视图
+                                        NotificationCenter.default.post(
+                                            name: Notification.Name("OpenResultView"),
+                                            object: nil,
+                                            userInfo: ["decisionId": finalDecision.id]
+                                        )
+                                    }
+                                }
+                            } else {
+                                // 如果是新决策，则直接关闭当前视图
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.dismiss()
+                                }
+                            }
+                        }
                     }
                 }
             } catch {
-                await MainActor.run {
+                // 处理错误
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
                     withAnimation {
-                        isAnalyzing = false
-                        errorMessage = (error as? AIService.AIServiceError)?.localizedDescription ?? error.localizedDescription
-                        showingError = true
+                        self.showingError = true
+                        self.retryCount += 1
                     }
                 }
             }
@@ -1305,6 +1571,31 @@ struct InputSheet: View {
 #Preview {
     CreateDecisionView()
         .environmentObject(DecisionStore())
+}
+
+// 决策类型过滤按钮
+struct DecisionTypeFilterButton: View {
+    let title: String
+    let icon: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                
+                Text(title)
+                    .font(.subheadline)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(isSelected ? Color("AppPrimary") : Color.gray.opacity(0.1))
+            .foregroundColor(isSelected ? .white : .primary)
+            .cornerRadius(20)
+        }
+    }
 }
 
 // 添加获取渐变色的函数
