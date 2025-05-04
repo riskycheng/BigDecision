@@ -168,18 +168,9 @@ struct StatsView: View {
                             
                             // 决策时间分布
                             StatsCard(title: "决策时间分布") {
-                                // 简单的柱状图代替TimeDistributionChart
-                                Chart {
-                                    ForEach(filteredDecisions) { decision in
-                                        BarMark(
-                                            x: .value("日期", decision.createdAt, unit: .day),
-                                            y: .value("数量", 1)
-                                        )
-                                        .foregroundStyle(Color("AppPrimary"))
-                                    }
-                                }
-                                .frame(height: 200)
-                                .padding(.vertical)
+                                TimeDistributionChart(decisions: filteredDecisions)
+                                    .frame(height: 200)
+                                    .padding(.vertical)
                             }
                         }
                         .padding(.horizontal)

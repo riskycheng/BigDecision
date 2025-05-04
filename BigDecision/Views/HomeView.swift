@@ -41,7 +41,7 @@ struct HomeView: View {
                     .ignoresSafeArea()
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("你好，用户")
+                        Text("你好")
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
@@ -295,6 +295,7 @@ struct HomeView: View {
 
 struct CompactHistoryItemRow: View {
     let decision: Decision
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -310,6 +311,7 @@ struct CompactHistoryItemRow: View {
                     
                     Text(decision.title)
                         .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(colorScheme == .dark ? .white : .primary)
                         .lineLimit(1)
                     
                     Image(systemName: "chevron.forward")
@@ -347,6 +349,7 @@ struct CompactHistoryItemRow: View {
                         
                         Text(result.recommendation == "A" ? decision.options[0].title : decision.options[1].title)
                             .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(colorScheme == .dark ? .white : .primary)
                             .lineLimit(1)
                         
                         Image(systemName: "info.circle")
@@ -380,9 +383,9 @@ struct CompactHistoryItemRow: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(Color.white)
+        .background(colorScheme == .dark ? Color.black.opacity(0.3) : Color.white)
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.05), radius: 8, y: 2)
     }
 }
 
