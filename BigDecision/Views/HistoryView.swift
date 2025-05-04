@@ -163,10 +163,10 @@ struct HistoryItemRow: View {
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: decision.decisionType.icon)
-                        .foregroundColor(Color("AppPrimary"))
+                        .foregroundColor(colorScheme == .dark ? Color("AppPrimary").opacity(0.9) : Color("AppPrimary"))
                         .font(.system(size: 16))
                         .frame(width: 24, height: 24)
-                        .background(Color("AppPrimary").opacity(0.1))
+                        .background(colorScheme == .dark ? Color("AppPrimary").opacity(0.2) : Color("AppPrimary").opacity(0.1))
                         .clipShape(Circle())
                     
                     Text(decision.title)
@@ -183,7 +183,7 @@ struct HistoryItemRow: View {
                 
                 Text(decision.createdAt.formatRelativeDate())
                     .font(.system(size: 13))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
             }
             
             if let result = decision.result {
@@ -193,13 +193,13 @@ struct HistoryItemRow: View {
                     HStack(spacing: 8) {
                         Text("结果")
                             .font(.system(size: 13))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.9) : .secondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             #if canImport(UIKit)
-                            .background(Color(UIColor.systemGray6))
+                            .background(colorScheme == .dark ? Color.white.opacity(0.15) : Color(UIColor.systemGray6))
                             #else
-                            .background(Color.gray.opacity(0.1))
+                            .background(colorScheme == .dark ? Color.white.opacity(0.15) : Color.gray.opacity(0.1))
                             #endif
                             .cornerRadius(4)
                         
@@ -214,24 +214,24 @@ struct HistoryItemRow: View {
                         
                         Image(systemName: "info.circle")
                             .font(.system(size: 12))
-                            .foregroundColor(Color("AppPrimary").opacity(0.6))
+                            .foregroundColor(colorScheme == .dark ? Color("AppPrimary").opacity(0.9) : Color("AppPrimary").opacity(0.6))
                     }
                     
                     // 置信度
                     HStack(spacing: 8) {
                         Text("\(Int(result.confidence * 100))%")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color("AppPrimary"))
+                            .foregroundColor(colorScheme == .dark ? Color("AppPrimary").opacity(0.9) : Color("AppPrimary"))
                         
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
                                 Rectangle()
-                                    .fill(Color("AppPrimary").opacity(0.2))
+                                    .fill(colorScheme == .dark ? Color("AppPrimary").opacity(0.3) : Color("AppPrimary").opacity(0.2))
                                     .frame(width: geometry.size.width, height: 6)
                                     .cornerRadius(3)
                                 
                                 Rectangle()
-                                    .fill(Color("AppPrimary"))
+                                    .fill(colorScheme == .dark ? Color("AppPrimary").opacity(0.9) : Color("AppPrimary"))
                                     .frame(width: geometry.size.width * result.confidence, height: 6)
                                     .cornerRadius(3)
                             }
@@ -243,7 +243,7 @@ struct HistoryItemRow: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(colorScheme == .dark ? Color.black.opacity(0.3) : Color.white)
+        .background(colorScheme == .dark ? Color.black.opacity(0.5) : Color.white)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.05), radius: 8, y: 2)
     }

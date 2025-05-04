@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GuideView: View {
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) var colorScheme
     
     struct GuideItem {
         let title: String
@@ -69,7 +70,7 @@ struct GuideView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
-                .background(Color(UIColor.systemBackground))
+                .background(colorScheme == .dark ? Color.black.opacity(0.7) : Color(UIColor.systemBackground))
                 
                 // 内容区域
                 TabView(selection: $currentPage) {
@@ -109,11 +110,11 @@ struct GuideView: View {
             // 图标
             Image(systemName: item.imageName)
                 .font(.system(size: 80))
-                .foregroundColor(Color("AppPrimary"))
+                .foregroundColor(colorScheme == .dark ? Color("AppPrimary").opacity(0.9) : Color("AppPrimary"))
                 .padding()
                 .background(
                     Circle()
-                        .fill(Color("AppPrimary").opacity(0.1))
+                        .fill(colorScheme == .dark ? Color("AppPrimary").opacity(0.2) : Color("AppPrimary").opacity(0.1))
                         .frame(width: 180, height: 180)
                 )
             
@@ -122,11 +123,12 @@ struct GuideView: View {
                 Text(item.title)
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundColor(colorScheme == .dark ? .white : .primary)
                 
                 Text(item.description)
                     .font(.body)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.85) : .secondary)
                     .padding(.horizontal, 32)
             }
             
