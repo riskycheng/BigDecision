@@ -290,6 +290,8 @@ struct ResultView: View {
                                 Text("分析理由")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary"))
+                                
+                                Spacer()
                             }
                             
                             Button(action: { 
@@ -437,7 +439,19 @@ struct ResultView: View {
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                     }
-                    .padding(.bottom, UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0)
+                    .padding(.bottom, {
+                        #if canImport(UIKit)
+                        if #available(iOS 15.0, *) {
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                               let keyWindow = windowScene.windows.first {
+                                return keyWindow.safeAreaInsets.bottom
+                            }
+                        } else {
+                            return UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0
+                        }
+                        #endif
+                        return 0
+                    }())
                 }
             }
             .padding()

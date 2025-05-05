@@ -35,7 +35,7 @@ enum AIModelType: String, CaseIterable {
     }
 }
 
-class AIService: ObservableObject {
+class AIService: ObservableObject, @unchecked Sendable {
     private let apiKey = "sk-ezwzqwedwhtnbyitbnyohvzanpitqqlnpjucejddpozmpjxj"  // DeepSeek API Key
     private let baseURL = "https://api.siliconflow.cn/v1/chat/completions"
     private let monitor = NWPathMonitor()
@@ -396,19 +396,18 @@ class AIService: ObservableObject {
                                         print("[思考过程]: \(reasoning)")
                                         
                                         // 更新UI显示的思考步骤
-                                        DispatchQueue.main.async {
-                                            // 将思考过程添加到数组中
-                                            self.streamedThinkingSteps.append(reasoning)
+                                        DispatchQueue.main.async { [weak self] in
+                                            self?.streamedThinkingSteps.append(reasoning)
                                             
                                             // 通知观察者数据已更新
-                                            self.objectWillChange.send()
+                                            self?.objectWillChange.send()
                                         }
                                     }
                                     
                                     // 检查是否完成
                                     if choice.finish_reason != nil {
-                                        DispatchQueue.main.async {
-                                            self.streamingComplete = true
+                                        DispatchQueue.main.async { [weak self] in
+                                            self?.streamingComplete = true
                                         }
                                     }
                                 }
@@ -420,15 +419,15 @@ class AIService: ObservableObject {
                     }
                     
                     // 流式传输完成后，进入总结阶段
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
                         // 使用动画过渡到总结状态
                         withAnimation(.easeInOut(duration: 0.5)) {
-                            self.isSummarizing = true
-                            self.finalAnswer = "AI正在总结分析结果..."
+                            self?.isSummarizing = true
+                            self?.finalAnswer = "AI正在总结分析结果..."
                         }
                         
                         // 发送通知以触发可能的视觉反馈
-                        self.objectWillChange.send()
+                        self?.objectWillChange.send()
                     }
                     
                     // 等待短暂时间，显示总结状态，增加时间以提供更好的视觉反馈
@@ -482,29 +481,18 @@ class AIService: ObservableObject {
                                 if let arrayRange = Range(match.range(at: 1), in: sanitizedString),
                                    let fullRange = Range(match.range, in: sanitizedString) {
                                     let arrayContent = sanitizedString[arrayRange]
-                                    // 处理数组内容中的引号
-                                    var processedContent = String(arrayContent)
-                                    
-                                    // 将数组元素中的双引号替换为转义的双引号
-                                    let itemPattern = "\"([^\\\"]*)\""  // 匹配双引号内的内容
-                                    if let itemRegex = try? NSRegularExpression(pattern: itemPattern) {
-                                        let itemRange = NSRange(processedContent.startIndex..., in: processedContent)
-                                        let itemMatches = itemRegex.matches(in: processedContent, range: itemRange)
-                                        
-                                        for itemMatch in itemMatches.reversed() {
-                                            if let textRange = Range(itemMatch.range(at: 1), in: processedContent),
-                                               let fullItemRange = Range(itemMatch.range, in: processedContent) {
-                                                let text = processedContent[textRange]
-                                                // 处理文本中的内部引号
-                                                let escapedText = String(text).replacingOccurrences(of: "\"", with: "\\\"")
-                                                // 重建带转义引号的元素
-                                                processedContent.replaceSubrange(fullItemRange, with: "\"\(escapedText)\"")
-                                            }
+                                    // 分割数组元素
+                                    let elements = String(arrayContent).components(separatedBy: ",")
+                                    let processedElements = elements.map { element -> String in
+                                        let trimmed = element.trimmingCharacters(in: .whitespacesAndNewlines)
+                                        // 如果元素没有用双引号包围，则添加双引号
+                                        if !trimmed.hasPrefix("\"") || !trimmed.hasSuffix("\"") {
+                                            return "\"\(trimmed.replacingOccurrences(of: "\"", with: ""))\"" 
                                         }
+                                        return trimmed
                                     }
-                                    
-                                    // 更新原始字符串中的数组
-                                    sanitizedString.replaceSubrange(fullRange, with: "[\(processedContent)]")
+                                    // 重建数组
+                                    sanitizedString.replaceSubrange(fullRange, with: "[\(processedElements.joined(separator: ","))]")
                                 }
                             }
                         }
@@ -595,11 +583,11 @@ class AIService: ObservableObject {
                         let finalAnswerText = "\(result.recommendation == "A" ? "选项A" : "选项B"): \(option) (置信度: \(confidence)%)"
                         
                         // 更新UI状态
-                        DispatchQueue.main.async {
-                            self.finalAnswer = finalAnswerText
-                            self.isStreaming = false
-                            self.isSummarizing = false
-                            self.streamingComplete = true
+                        DispatchQueue.main.async { [weak self] in
+                            self?.finalAnswer = finalAnswerText
+                            self?.isStreaming = false
+                            self?.isSummarizing = false
+                            self?.streamingComplete = true
                         }
                         
                         // 返回结果
@@ -611,8 +599,8 @@ class AIService: ObservableObject {
                     }
                 } catch {
                     // 更新UI状态
-                    DispatchQueue.main.async {
-                        self.isStreaming = false
+                    DispatchQueue.main.async { [weak self] in
+                        self?.isStreaming = false
                     }
                     
                     if let aiError = error as? AIServiceError {
