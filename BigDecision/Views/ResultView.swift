@@ -25,7 +25,7 @@ struct ExpandableText: View {
                 Text(text)
                     .font(.system(size: 17))
                     .lineLimit(isExpanded ? nil : maxLines)
-                    .foregroundColor(Color.white)
+                    .foregroundColor(Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         GeometryReader { geometry in
@@ -101,10 +101,10 @@ struct DetailDialog: View {
                     HStack(spacing: 6) {
                         Image(systemName: "doc.text")
                             .font(.system(size: 15))
-                            .foregroundColor(Color.white.opacity(0.9))
+                            .foregroundColor(Color.primary.opacity(0.9))
                         Text(title)
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.9))
+                            .foregroundColor(Color.primary.opacity(0.9))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
@@ -113,13 +113,13 @@ struct DetailDialog: View {
                     // 内容区域
                     Text(content)
                         .font(.system(size: 17))
-                        .foregroundColor(Color.white.opacity(0.9))
+                        .foregroundColor(Color.primary.opacity(0.9))
                         .lineSpacing(6)
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(colorScheme == .dark ? Color.black.opacity(0.7) : Color.white)
+                                .fill(colorScheme == .dark ? Color(red: 0.25, green: 0.25, blue: 0.3) : Color.white)
                                 .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.3 : 0.05), radius: 10, y: 5)
                         )
                         .overlay(
@@ -135,8 +135,8 @@ struct DetailDialog: View {
             .background(
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color.black,
-                        Color.black.opacity(0.9)
+                        colorScheme == .dark ? Color(red: 0.15, green: 0.15, blue: 0.2) : Color.white,
+                        colorScheme == .dark ? Color(red: 0.12, green: 0.12, blue: 0.18) : Color.white.opacity(0.95)
                     ]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -236,7 +236,7 @@ struct ResultView: View {
                 CardView(backgroundColor: Color("AppPrimary").opacity(0.08)) {
                     ExpandableText(text: decision.title, maxLines: 3)
                         .font(.title2)
-                        .foregroundColor(Color.white)
+                        .foregroundColor(Color.primary)
                         .fontWeight(.bold)
                 }
                 
@@ -261,10 +261,10 @@ struct ResultView: View {
                                 HStack(spacing: 4) {
                                     Text("置信度")
                                         .font(.system(size: 14))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                     Text("\(Int(result.confidence * 100))%")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                 }
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
@@ -275,7 +275,7 @@ struct ResultView: View {
                             // 推荐选项
                             ExpandableText(text: getRecommendedOption(result.recommendation).title, maxLines: 2)
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(Color.white)
+                                .foregroundColor(Color.primary)
                         }
                     }
                     
@@ -298,7 +298,7 @@ struct ResultView: View {
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(result.reasoning)
                                         .font(.system(size: 17))
-                                        .foregroundColor(Color.white.opacity(0.9))
+                                        .foregroundColor(Color.primary.opacity(0.9))
                                         .lineLimit(4)
                                         .multilineTextAlignment(.leading)
                                         .padding(.horizontal, 12)
@@ -384,7 +384,7 @@ struct ResultView: View {
                                 // 思考过程预览
                                 Text(thinkingProcess.prefix(300) + (thinkingProcess.count > 300 ? "..." : ""))
                                     .font(.system(size: 15))
-                                    .foregroundColor(Color.white.opacity(0.9))
+                                    .foregroundColor(Color.primary.opacity(0.9))
                                     .lineLimit(8)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(12)
@@ -798,7 +798,7 @@ struct OptionAnalysisCard: View {
             HStack(spacing: 8) {
                 Text("选项")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Color.white.opacity(0.9))
+                    .foregroundColor(Color.primary.opacity(0.9))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.primary.opacity(0.1))
@@ -806,13 +806,13 @@ struct OptionAnalysisCard: View {
                 
                 Text(option.title)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color.white)
+                    .foregroundColor(Color.primary)
             }
             
             if !option.description.isEmpty {
                 Text(option.description)
                     .font(.system(size: 15))
-                    .foregroundColor(Color.white.opacity(0.9))
+                    .foregroundColor(Color.primary.opacity(0.9))
             }
             
             VStack(alignment: .leading, spacing: 12) {
@@ -835,7 +835,7 @@ struct OptionAnalysisCard: View {
                                     
                                     Text(pro)
                                         .font(.system(size: 15))
-                                        .foregroundColor(Color.white.opacity(0.9))
+                                        .foregroundColor(Color.primary.opacity(0.9))
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
@@ -863,7 +863,7 @@ struct OptionAnalysisCard: View {
                                     
                                     Text(con)
                                         .font(.system(size: 15))
-                                        .foregroundColor(Color.white.opacity(0.9))
+                                        .foregroundColor(Color.primary.opacity(0.9))
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }

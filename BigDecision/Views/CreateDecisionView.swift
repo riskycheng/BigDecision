@@ -80,6 +80,7 @@ struct CreateDecisionView: View {
     @State private var importance: Int = 3
     @State private var timeFrame: Decision.TimeFrame = .days
     @State private var selectedDecisionTypeFilter: Decision.DecisionType = .other
+    @Environment(\.colorScheme) var colorScheme
     
     init(initialDecision: Decision? = nil) {
         self.initialDecision = initialDecision
@@ -105,7 +106,7 @@ struct CreateDecisionView: View {
             ZStack {
                 // 背景色
                 #if canImport(UIKit)
-                Color(UIColor.systemBackground)
+                Color(uiColor: UIColor.systemBackground)
                     .ignoresSafeArea()
                 #else
                 Color.white
@@ -159,7 +160,7 @@ struct CreateDecisionView: View {
                                 .padding(.vertical, 12)
                         }
                         #if canImport(UIKit)
-                        .background(Color(UIColor.systemBackground))
+                        .background(Color(uiColor: UIColor.systemBackground))
                         #else
                         .background(Color.white)
                         #endif
@@ -204,12 +205,13 @@ struct CreateDecisionView: View {
             Text("这是你现在的困惑吗？")
                 .font(.system(size: 28, weight: .bold))
                 .multilineTextAlignment(.center)
+                .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .primary)
             
             Text("确认后，我们一起慢慢解开它。")
                 .font(.system(size: 17))
-                .foregroundColor(.secondary)
+                .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                 .multilineTextAlignment(.center)
-            
+                
             Button(action: {
                 if title.isEmpty {
                     tempTitle = ""
@@ -223,7 +225,7 @@ struct CreateDecisionView: View {
                 ZStack {
                     // 外层阴影
                     Circle()
-                        .fill(Color.white)
+                        .fill(colorScheme == .dark ? Color(red: 0.2, green: 0.2, blue: 0.25) : Color.white)
                         .frame(width: 240, height: 240)
                         .shadow(color: Color(hex: "4158D0").opacity(0.1), radius: 15, x: 0, y: 8)
                     
@@ -232,7 +234,10 @@ struct CreateDecisionView: View {
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(
-                                    colors: [
+                                    colors: colorScheme == .dark ? [
+                                        Color(red: 0.22, green: 0.22, blue: 0.27),
+                                        Color(red: 0.25, green: 0.25, blue: 0.3)
+                                    ] : [
                                         Color(hex: "EEF2FF"),
                                         Color(hex: "F6F0FF")
                                     ]
@@ -267,18 +272,18 @@ struct CreateDecisionView: View {
                         if title.isEmpty {
                             Image(systemName: "pencil.circle.fill")
                                 .font(.system(size: 40))
-                                .foregroundColor(Color(hex: "4158D0"))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : Color(hex: "4158D0"))
                                 .symbolRenderingMode(.hierarchical)
                             
                             Text("在这里输入您的困惑...")
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(hex: "4158D0").opacity(0.6))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : Color(hex: "4158D0").opacity(0.6))
                                 .multilineTextAlignment(.center)
                                 .frame(width: 160)
                         } else {
                             Text(title)
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(Color(hex: "4158D0"))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.9) : Color(hex: "4158D0"))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 20)
                                 .frame(width: 200)
@@ -320,7 +325,7 @@ struct CreateDecisionView: View {
                     ZStack {
                         // 外层阴影
                         Circle()
-                            .fill(Color.white)
+                            .fill(colorScheme == .dark ? Color(red: 0.2, green: 0.2, blue: 0.25) : Color.white)
                             .frame(width: 240, height: 240)
                             .shadow(color: Color(hex: "C850C0").opacity(0.1), radius: 15, x: 0, y: 8)
                         
@@ -329,7 +334,10 @@ struct CreateDecisionView: View {
                             .fill(
                                 LinearGradient(
                                     gradient: Gradient(
-                                        colors: [
+                                        colors: colorScheme == .dark ? [
+                                            Color(red: 0.22, green: 0.22, blue: 0.27),
+                                            Color(red: 0.25, green: 0.25, blue: 0.3)
+                                        ] : [
                                             Color(hex: "FFF1F9"),
                                             Color(hex: "FFF0F2")
                                         ]
@@ -344,20 +352,20 @@ struct CreateDecisionView: View {
                         Circle()
                             .stroke(
                                 LinearGradient(
-                                    gradient: Gradient(
-                                        colors: [
-                                            Color(hex: "C850C0").opacity(0.3),
-                                            Color(hex: "FFCC70").opacity(0.3),
-                                            Color(hex: "C850C0").opacity(0.3)
-                                        ]
-                                    ),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+                                gradient: Gradient(
+                                    colors: [
+                                        Color(hex: "C850C0").opacity(0.3),
+                                        Color(hex: "FFCC70").opacity(0.3),
+                                        Color(hex: "C850C0").opacity(0.3)
+                                    ]
                                 ),
-                                lineWidth: 2
-                            )
-                            .frame(width: 220, height: 220)
-                            .blur(radius: 1)
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                        .frame(width: 220, height: 220)
+                        .blur(radius: 1)
                         
                         // 内容
                         VStack(spacing: 12) {
@@ -368,7 +376,7 @@ struct CreateDecisionView: View {
                             
                             Text("点击添加您的选择...")
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(hex: "C850C0").opacity(0.6))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : Color(hex: "C850C0").opacity(0.6))
                                 .multilineTextAlignment(.center)
                                 .frame(width: 160)
                         }
@@ -519,7 +527,7 @@ struct CreateDecisionView: View {
             
             Text("可以补充一些背景信息，帮助AI更好地分析")
                 .font(.system(size: 17))
-                .foregroundColor(.secondary)
+                .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                 .multilineTextAlignment(.center)
                 
             // 决策类型选择标签
@@ -551,7 +559,7 @@ struct CreateDecisionView: View {
                 ZStack {
                     // 外层阴影
                     Circle()
-                        .fill(Color.white)
+                        .fill(colorScheme == .dark ? Color(red: 0.2, green: 0.2, blue: 0.25) : Color.white)
                         .frame(width: 240, height: 240)
                         .shadow(color: Color(hex: "FFCC70").opacity(0.1), radius: 15, x: 0, y: 8)
                     
@@ -560,7 +568,10 @@ struct CreateDecisionView: View {
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(
-                                    colors: [
+                                    colors: colorScheme == .dark ? [
+                                        Color(red: 0.22, green: 0.22, blue: 0.27),
+                                        Color(red: 0.25, green: 0.25, blue: 0.3)
+                                    ] : [
                                         Color(hex: "FFFAF0"),
                                         Color(hex: "FFF9E6")
                                     ]
@@ -575,20 +586,20 @@ struct CreateDecisionView: View {
                     Circle()
                         .stroke(
                             LinearGradient(
-                                gradient: Gradient(
-                                    colors: [
-                                        Color(hex: "FFCC70").opacity(0.3),
-                                        Color(hex: "FF6B6B").opacity(0.3),
-                                        Color(hex: "FFCC70").opacity(0.3)
-                                    ]
-                                ),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 2
-                        )
-                        .frame(width: 220, height: 220)
-                        .blur(radius: 1)
+                        gradient: Gradient(
+                            colors: [
+                                Color(hex: "FFCC70").opacity(0.3),
+                                Color(hex: "FF6B6B").opacity(0.3),
+                                Color(hex: "FFCC70").opacity(0.3)
+                            ]
+                        ),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                        lineWidth: 2
+                    )
+                    .frame(width: 220, height: 220)
+                    .blur(radius: 1)
                     
                     // 内容
                     VStack(spacing: 12) {
@@ -600,13 +611,13 @@ struct CreateDecisionView: View {
                             
                             Text("点击添加补充信息...")
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(hex: "FFCC70").opacity(0.7))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : Color(hex: "FFCC70").opacity(0.7))
                                 .multilineTextAlignment(.center)
                                 .frame(width: 160)
                         } else {
                             Text(additionalInfo)
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(hex: "FF9500"))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : Color(hex: "FF9500"))
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 20)
                                 .frame(width: 200)
@@ -635,7 +646,7 @@ struct CreateDecisionView: View {
     private var analyzingView: some View {
         ZStack {
             #if canImport(UIKit)
-            Color(UIColor.systemBackground)
+            Color(uiColor: UIColor.systemBackground)
                 .ignoresSafeArea()
             #else
             Color.white
@@ -654,7 +665,7 @@ struct CreateDecisionView: View {
                         Text(errorMessage ?? "发生未知错误")
                             .font(.system(size: 17))
                             .multilineTextAlignment(.center)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                             .padding(.horizontal, 40)
                         
                         if retryCount < maxRetries {
@@ -716,14 +727,14 @@ struct CreateDecisionView: View {
                                     // 显示初始提示消息
                                     Text("正在启动思考分析过程...")
                                         .font(.system(size: 15))
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.vertical, 8)
                                 } else {
                                     // 将所有思考步骤合并为一个文本显示，保持思考过程的连续性
                                     Text(aiService.streamedThinkingSteps.joined())
                                         .font(.system(size: 15))
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .primary)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.vertical, 2)
                                         .transition(.opacity)
@@ -751,7 +762,7 @@ struct CreateDecisionView: View {
                                 }
                             }
                             .padding()
-                            .onChange(of: aiService.streamedThinkingSteps.count) { _ in
+                            .onChange(of: aiService.streamedThinkingSteps.count) { newValue, oldValue in
                                 // 当思考步骤更新时，自动滚动到底部
                                 withAnimation {
                                     if !aiService.streamedThinkingSteps.isEmpty {
@@ -761,7 +772,7 @@ struct CreateDecisionView: View {
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .background(Color(UIColor.secondarySystemBackground))
+                        .background(Color(uiColor: UIColor.secondarySystemBackground))
                         .cornerRadius(12)
                         // 减少水平边距，使文本区域更宽
                         .padding(.horizontal, 10)
@@ -777,13 +788,13 @@ struct CreateDecisionView: View {
                                     
                                     Text("正在总结分析结果...")
                                         .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                                 }
                                 .padding(.vertical, 12)
                                 .padding(.horizontal, 16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(UIColor.tertiarySystemBackground))
+                                        .fill(Color(uiColor: UIColor.tertiarySystemBackground))
                                         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                                 )
                                 
@@ -795,7 +806,7 @@ struct CreateDecisionView: View {
                                 
                                 Text("正在处理最终结果，请稍等...")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                                     .padding(.top, 4)
                                 
                                 .scaleEffect(1.05) // 稍微放大以吸引注意
@@ -805,7 +816,7 @@ struct CreateDecisionView: View {
                             .padding(.horizontal, 16) // 减少水平边距
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(UIColor.systemBackground))
+                                    .fill(Color(uiColor: UIColor.systemBackground))
                                     .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
                             )
                             .padding(.top, 10) // 减少顶部边距
@@ -845,7 +856,7 @@ struct CreateDecisionView: View {
                                     .cornerRadius(8)
                             }
                             .padding()
-                            .background(Color(UIColor.tertiarySystemBackground))
+                            .background(Color(uiColor: UIColor.tertiarySystemBackground))
                             .cornerRadius(12)
                             .padding(.horizontal)
                             .padding(.top, 10)
@@ -862,10 +873,7 @@ struct CreateDecisionView: View {
                                 Circle()
                                     .stroke(
                                         LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color("AppPrimary").opacity(0.2 - Double(index) * 0.05),
-                                                Color("AppSecondary").opacity(0.2 - Double(index) * 0.05)
-                                            ]),
+                                            gradient: Gradient(colors: [Color("AppPrimary").opacity(0.2 - Double(index) * 0.05), Color("AppSecondary").opacity(0.2 - Double(index) * 0.05)]),
                                             startPoint: .leading,
                                             endPoint: .trailing
                                         ),
@@ -940,7 +948,7 @@ struct CreateDecisionView: View {
                                         
                                         Text(analysisSteps[index])
                                             .font(.system(size: 15))
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                                             .lineLimit(1)
                                             .fixedSize(horizontal: false, vertical: true)
                                         
@@ -1158,7 +1166,7 @@ struct CreateDecisionView: View {
         setupAnalysis()
         
         // 检查是否是高级模式
-        let isAdvancedMode = AIModelType(rawValue: aiService.aiModelType) == .advanced
+        _ = AIModelType(rawValue: aiService.aiModelType) == .advanced
         
         // 开始分析
         Task {
@@ -1245,6 +1253,7 @@ struct OptionCard: View {
     let isFirst: Bool
     let onEdit: () -> Void
     var onDelete: (() -> Void)? = nil
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         Button(action: onEdit) {
@@ -1285,13 +1294,13 @@ struct OptionCard: View {
                 if !option.description.isEmpty {
                     Text(option.description)
                         .font(.system(size: 15))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                 }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             #if canImport(UIKit)
-            .background(Color(UIColor.systemBackground))
+            .background(Color(uiColor: UIColor.systemBackground))
             #else
             .background(Color.white)
             #endif
@@ -1321,6 +1330,7 @@ struct OptionCard: View {
 struct StepProgressBar: View {
     let currentStep: CreateDecisionView.Step
     private let steps = CreateDecisionView.Step.allCases
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         HStack(spacing: 10) {
@@ -1348,7 +1358,7 @@ struct StepProgressBar: View {
             // 步骤名称
             Text(step.title)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(currentStep == step ? step.color.0 : .secondary)
+                .foregroundColor(currentStep == step ? step.color.0 : (colorScheme == .dark ? Color.gray.opacity(0.8) : Color.secondary))
                 .fixedSize()
         }
         .frame(maxWidth: .infinity)
@@ -1362,7 +1372,7 @@ struct StepProgressBar: View {
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ) : LinearGradient(
-                    gradient: Gradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)]),
+                    gradient: Gradient(colors: [Color.gray.opacity(0.5), Color.gray.opacity(0.5)]),
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ))
@@ -1380,6 +1390,10 @@ struct StepProgressBar: View {
                     }
                 }
             )
+            .overlay(
+                Circle()
+                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+            )
     }
     
     private func stepConnector(from: CreateDecisionView.Step, to: CreateDecisionView.Step) -> some View {
@@ -1390,39 +1404,11 @@ struct StepProgressBar: View {
                     startPoint: .leading, 
                     endPoint: .trailing
                 ) : LinearGradient(
-                    gradient: Gradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)]),
+                    gradient: Gradient(colors: [Color.gray.opacity(0.5), Color.gray.opacity(0.5)]),
                     startPoint: .leading,
                     endPoint: .trailing
                 ))
             .frame(height: 4)
-    }
-}
-
-// 添加 Color 扩展
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
     }
 }
 
@@ -1436,6 +1422,7 @@ struct InputSheet: View {
     var onDelete: (() -> Void)? = nil
     var isEditing: Bool = false
     @State private var showingDeleteConfirmation = false
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         NavigationView {
@@ -1444,11 +1431,12 @@ struct InputSheet: View {
                 VStack(spacing: 8) {
                     Text(title)
                         .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .primary)
                         .multilineTextAlignment(.center)
                     
                     Text("输入后，我们一起慢慢解开它。")
                         .font(.system(size: 17))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .secondary)
                         .multilineTextAlignment(.center)
                 }
                 .padding(.top, 60) // 增加顶部间距，避免与导航图标重叠
@@ -1459,7 +1447,9 @@ struct InputSheet: View {
                 // 输入区域
                 ZStack {
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color(hex: "F8F9FF"))
+                        .fill(Color(uiColor: UIColor { traitCollection in
+                            traitCollection.userInterfaceStyle == .dark ? UIColor(red: 0.15, green: 0.15, blue: 0.2, alpha: 1.0) : UIColor(hex: "F8F9FF")
+                        }))
                         .frame(height: 150)
                         .shadow(color: Color(hex: "4158D0").opacity(0.05), radius: 10, y: 4)
                         .overlay(
@@ -1483,17 +1473,18 @@ struct InputSheet: View {
                         .padding(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                         .frame(height: 150)
                         .scrollContentBackground(.hidden)
+                        .foregroundColor(.primary) // Ensure text uses primary color for proper dark mode contrast
                         .background(
                             ZStack(alignment: .topLeading) {
                                 if text.isEmpty {
                                     HStack {
                                         Image(systemName: "pencil.line")
-                                            .foregroundColor(Color(hex: "4158D0").opacity(0.5))
+                                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : Color.primary.opacity(0.5))
                                             .font(.system(size: 15))
                                         
                                         Text(placeholder)
                                             .font(.system(size: 17))
-                                            .foregroundColor(Color(hex: "4158D0").opacity(0.5))
+                                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : Color.primary.opacity(0.5))
                                     }
                                     .padding(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                                 }
@@ -1615,3 +1606,58 @@ extension CreateDecisionView {
         }
     }
 } 
+
+// 添加 Color 扩展
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (1, 1, 1, 0)
+        }
+
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue:  Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
+}
+
+// 添加 UIColor 扩展
+extension UIColor {
+    convenience init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (1, 1, 1, 0)
+        }
+
+        self.init(
+            red: CGFloat(r) / 255,
+            green: CGFloat(g) / 255,
+            blue: CGFloat(b) / 255,
+            alpha: CGFloat(a) / 255
+        )
+    }
+}
