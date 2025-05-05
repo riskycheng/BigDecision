@@ -10,11 +10,13 @@ import SwiftUI
 @main
 struct BigDecisionApp: App {
     @StateObject private var decisionStore = DecisionStore()
+    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(decisionStore)
+                .environmentObject(reanalysisCoordinator)
         }
     }
 }

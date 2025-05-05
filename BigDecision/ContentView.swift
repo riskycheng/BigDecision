@@ -70,7 +70,8 @@ struct ContentView: View {
         }) {
             if let decisionToReanalyze = reanalysisCoordinator.decisionToReanalyze {
                 CreateDecisionView(initialDecision: decisionToReanalyze)
-                    .environmentObject(decisionStore) // 使用现有的DecisionStore实例而不是创建新的
+                    .environmentObject(decisionStore) // 使用现有的DecisionStore实例
+                    .environmentObject(reanalysisCoordinator) // 传递ReanalysisCoordinator
                     .interactiveDismissDisabled(false)
             }
         }

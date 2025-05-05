@@ -7,7 +7,7 @@ struct CreateDecisionView: View {
     @EnvironmentObject var decisionStore: DecisionStore
     @Environment(\.dismiss) private var dismiss
     @StateObject private var aiService = AIService()
-    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
+    @EnvironmentObject private var reanalysisCoordinator: ReanalysisCoordinator
     
     // 步骤状态
     enum Step: Int, CaseIterable {
