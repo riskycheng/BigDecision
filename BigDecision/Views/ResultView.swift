@@ -18,6 +18,7 @@ struct ExpandableText: View {
     @State private var showingDetailDialog = false
     @State private var intrinsicHeight: CGFloat = 0
     @State private var truncatedHeight: CGFloat = 0
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -25,7 +26,7 @@ struct ExpandableText: View {
                 Text(text)
                     .font(.system(size: 17))
                     .lineLimit(isExpanded ? nil : maxLines)
-                    .foregroundColor(Color.primary)
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         GeometryReader { geometry in
@@ -46,7 +47,7 @@ struct ExpandableText: View {
                         HStack(spacing: 2) {
                             Text("查看详情")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color("AppPrimary").opacity(0.8))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary").opacity(0.9))
                             Image(systemName: "chevron.forward")
                                 .font(.system(size: 11, weight: .semibold))
                                 .foregroundColor(Color("AppPrimary").opacity(0.6))
@@ -101,10 +102,10 @@ struct DetailDialog: View {
                     HStack(spacing: 6) {
                         Image(systemName: "doc.text")
                             .font(.system(size: 15))
-                            .foregroundColor(Color.primary.opacity(0.9))
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color.primary.opacity(0.9))
                         Text(title)
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color.primary.opacity(0.9))
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color.primary.opacity(0.9))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
@@ -113,7 +114,7 @@ struct DetailDialog: View {
                     // 内容区域
                     Text(content)
                         .font(.system(size: 17))
-                        .foregroundColor(Color.primary.opacity(0.9))
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary)
                         .lineSpacing(6)
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -208,21 +209,21 @@ struct ResultView: View {
     @State private var isFavorited: Bool
     @State private var showingShareSheet = false
     @State private var showingExportOptions = false
-    // 对话框状态
-    @State private var showingDetailDialog = false
-    // 分析过程对话框
-    @State private var showingThinkingProcessDialog = false
-    // 分析理由对话框
+    @State private var showingExportImage = false
+    @State private var exportedImage: UIImage?
+    @State private var showingDeleteConfirmation = false
+    @State private var showingExportReport = false
     @State private var showingReasoningDialog = false
+    @State private var showingThinkingProcessDialog = false
     @State private var showingReanalyzeConfirmation = false
-    @StateObject private var reanalysisCoordinator = ReanalysisCoordinator.shared
     @State private var selectedShareContentType: ShareContentType = .summary
-    @State private var showingCreateDecision = false
-    #if canImport(UIKit)
-    @State private var exportImage: UIImage?
-    #endif
-    @State private var showingExportedImage = false
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var decisionStore: DecisionStore
+    @EnvironmentObject var reanalysisCoordinator: ReanalysisCoordinator
+    
+    enum ShareContentType {
+        case summary, detailed, image
+    }
     
     init(decision: Decision) {
         self.decision = decision
@@ -236,7 +237,7 @@ struct ResultView: View {
                 CardView(backgroundColor: Color("AppPrimary").opacity(0.08)) {
                     ExpandableText(text: decision.title, maxLines: 3)
                         .font(.title2)
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color.primary)
                         .fontWeight(.bold)
                 }
                 
@@ -252,7 +253,7 @@ struct ResultView: View {
                                         .foregroundColor(Color("AppPrimary"))
                                     Text("AI推荐")
                                         .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(Color("AppPrimary"))
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary"))
                                 }
                                 
                                 Spacer()
@@ -261,10 +262,10 @@ struct ResultView: View {
                                 HStack(spacing: 4) {
                                     Text("置信度")
                                         .font(.system(size: 14))
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary)
                                     Text("\(Int(result.confidence * 100))%")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary)
                                 }
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
@@ -275,7 +276,7 @@ struct ResultView: View {
                             // 推荐选项
                             ExpandableText(text: getRecommendedOption(result.recommendation).title, maxLines: 2)
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(Color.primary)
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color.primary)
                         }
                     }
                     
@@ -288,7 +289,7 @@ struct ResultView: View {
                                     .foregroundColor(Color("AppPrimary"))
                                 Text("分析理由")
                                     .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(Color("AppPrimary"))
+                                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary"))
                             }
                             
                             Button(action: { 
@@ -298,7 +299,7 @@ struct ResultView: View {
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(result.reasoning)
                                         .font(.system(size: 17))
-                                        .foregroundColor(Color.primary.opacity(0.9))
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary.opacity(0.9))
                                         .lineLimit(4)
                                         .multilineTextAlignment(.leading)
                                         .padding(.horizontal, 12)
@@ -311,7 +312,7 @@ struct ResultView: View {
                                         Spacer()
                                         Text("查看详情")
                                             .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(Color("AppPrimary").opacity(0.9))
+                                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary").opacity(0.9))
                                             .padding(.horizontal, 8)
                                             .padding(.vertical, 2)  // 减小垂直内边距
                                             .background(
@@ -339,7 +340,7 @@ struct ResultView: View {
                                     .foregroundColor(Color("AppPrimary"))
                                 Text("详情分析")
                                     .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(Color("AppPrimary"))
+                                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary"))
                             }
                             
                             // 选项对比
@@ -367,7 +368,7 @@ struct ResultView: View {
                                         .foregroundColor(Color("AppPrimary"))
                                     Text("分析过程")
                                         .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(Color("AppPrimary"))
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary"))
                                     
                                     Spacer()
                                     
@@ -377,14 +378,14 @@ struct ResultView: View {
                                     }) {
                                         Text("查看全部")
                                             .font(.system(size: 14))
-                                            .foregroundColor(Color("AppPrimary").opacity(0.9))
+                                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : Color("AppPrimary").opacity(0.9))
                                     }
                                 }
                                 
                                 // 思考过程预览
                                 Text(thinkingProcess.prefix(300) + (thinkingProcess.count > 300 ? "..." : ""))
                                     .font(.system(size: 15))
-                                    .foregroundColor(Color.primary.opacity(0.9))
+                                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary.opacity(0.9))
                                     .lineLimit(8)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(12)
@@ -447,18 +448,18 @@ struct ResultView: View {
                 HStack(spacing: 15) {
                     Button(action: toggleFavorite) {
                         Image(systemName: isFavorited ? "star.fill" : "star")
-                            .foregroundColor(isFavorited ? .yellow : .gray)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : isFavorited ? .yellow : .gray)
                     }
                     
                     #if canImport(UIKit)
                     Button(action: { showingShareSheet = true }) {
                         Image(systemName: "square.and.arrow.up")
-                            .foregroundColor(.gray)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .gray)
                     }
                     
                     Button(action: { showingExportOptions = true }) {
                         Image(systemName: "square.and.arrow.down")
-                            .foregroundColor(.gray)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .gray)
                     }
                     #endif
                 }
@@ -471,8 +472,8 @@ struct ResultView: View {
                 buttons: [
                     .default(Text("图片")) {
                         if let image = exportDecisionAsImage() {
-                            exportImage = image
-                            showingExportedImage = true
+                            exportedImage = image
+                            showingExportImage = true
                         }
                     },
                     .default(Text("PDF")) {
@@ -521,9 +522,9 @@ struct ResultView: View {
                 secondaryButton: .cancel(Text("取消"))
             )
         }
-        .sheet(isPresented: $showingExportedImage) {
-            if let image = exportImage {
-                ExportImageView(image: image, onDismiss: { showingExportedImage = false })
+        .sheet(isPresented: $showingExportImage) {
+            if let image = exportedImage {
+                ExportImageView(image: image, onDismiss: { showingExportImage = false })
             }
         }
         #endif
@@ -791,6 +792,7 @@ struct OptionAnalysisCard: View {
     let option: Option
     let pros: [String]
     let cons: [String]
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -798,7 +800,7 @@ struct OptionAnalysisCard: View {
             HStack(spacing: 8) {
                 Text("选项")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Color.primary.opacity(0.9))
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary.opacity(0.9))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.primary.opacity(0.1))
@@ -806,13 +808,13 @@ struct OptionAnalysisCard: View {
                 
                 Text(option.title)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color.primary)
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary)
             }
             
             if !option.description.isEmpty {
                 Text(option.description)
                     .font(.system(size: 15))
-                    .foregroundColor(Color.primary.opacity(0.9))
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary.opacity(0.9))
             }
             
             VStack(alignment: .leading, spacing: 12) {
@@ -835,7 +837,7 @@ struct OptionAnalysisCard: View {
                                     
                                     Text(pro)
                                         .font(.system(size: 15))
-                                        .foregroundColor(Color.primary.opacity(0.9))
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary.opacity(0.9))
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
@@ -863,7 +865,7 @@ struct OptionAnalysisCard: View {
                                     
                                     Text(con)
                                         .font(.system(size: 15))
-                                        .foregroundColor(Color.primary.opacity(0.9))
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary.opacity(0.9))
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
@@ -885,26 +887,16 @@ struct OptionAnalysisCard: View {
 }
 
 #if canImport(UIKit)
-// 系统分享视图
-struct ShareSheet: UIViewControllerRepresentable {
-    var items: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
-// 导出图片预览视图
 struct ExportImageView: View {
     let image: UIImage
     let onDismiss: () -> Void
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         VStack(spacing: 20) {
             Text("决策分析图片")
                 .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary)
                 .padding(.top)
             
             Image(uiImage: image)
@@ -930,7 +922,7 @@ struct ExportImageView: View {
                 Button(action: onDismiss) {
                     Text("关闭")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.95) : .primary)
                         .padding(.horizontal, 25)
                         .padding(.vertical, 12)
                         .background(Color.gray.opacity(0.1))
@@ -967,4 +959,4 @@ struct ExportImageView: View {
     )
     
     ResultView(decision: sampleDecision)
-} 
+}
